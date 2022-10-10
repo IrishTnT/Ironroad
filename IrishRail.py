@@ -11,6 +11,7 @@ import numpy
 # -> Fix input checks.
 # -> Stop errors.
 # -> Do basic error correction. (Take Station list & compare?)
+# -> Fix Heuston in Stations.
 
 
 mreq = input("Which do you want to query?\nS - Stations,\nT - Trains.\n(Any other input will search for Trains.)\n")
