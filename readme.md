@@ -8,8 +8,8 @@ Ironroad is a personal project to further my Python experience by processing the
 * [Python](https://www.python.org/downloads/)
 
 ### Dependencies
-`pip install requests`
-`pip install numpy`
+Install required packages through [pip](https://pypi.org/project/pip/).
+`pip install -r requirements.txt`
 
 ### Credits
 Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the project would've been canned if you didn't save it!
