@@ -11,7 +11,6 @@ import numpy
 # -> Fix input checks.
 # -> Stop errors.
 # -> Do basic error correction. (Take Station list & compare?)
-# -> Fix Heuston in Stations.
 
 
 mreq = input("Which do you want to query?\nS - Stations,\nT - Trains.\n(Any other input will search for Trains.)\n")
@@ -49,8 +48,8 @@ elif tloc == 0:
     stype = input("What station do you want to query\n")
     stime = input("How far into the future do you want to query?\n")
 
-    requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + stype + '&NumMins=' + stime
-    print("Querying", stype.upper(), ",", stime, "minutes into the future. Please wait...")
+    requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + stype.replace(' ', '%20') + '&NumMins=' + stime
+    print("Querying", stype.upper() + ",", stime, "minutes into the future. Please wait...")
 
 root = ET.parse(urllib.request.urlopen(requestURL)).getroot()
 
@@ -76,15 +75,19 @@ for child in root:
     trainData.append(temp)
     # will add the object to the trainData array
 
-# print(trainData)
+print(trainData)
 with open("./test.json", "w") as f:
     f.write(json.dumps(trainData, indent = 4, sort_keys = True))
     # This just dumps the data into a json file
 
 if tloc == 0:
-    train = []
     
-    train = next((item for item in trainData))
+    if trainData == []:
+        print("No trains found in the next", stime, "minutes.")
+    else:
+        train = []
+    
+        train = next((item for item in trainData))
 
     if int(train["Duein"]) != 1:
         print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
@@ -106,9 +109,9 @@ elif tloc == 1:
         
         if train:
             return train["PublicMessage"].replace('\\n', '\n').splitlines()
-        return "N/A"
+        return None
 
-    while extract_train_data(dest) == "N/A":
+    while extract_train_data(dest) == None:
         if dest == "cancel":
             exit()
             
