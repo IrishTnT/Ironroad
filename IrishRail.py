@@ -75,7 +75,7 @@ for child in root:
     trainData.append(temp)
     # will add the object to the trainData array
 
-print(trainData)
+#print(trainData)
 with open("./test.json", "w") as f:
     f.write(json.dumps(trainData, indent = 4, sort_keys = True))
     # This just dumps the data into a json file
@@ -83,16 +83,21 @@ with open("./test.json", "w") as f:
 if tloc == 0:
     
     if trainData == []:
-        print("No trains found in the next", stime, "minutes.")
+        print("No trains found, or the station does not exist.")
+        exit()
     else:
         train = []
-    
-        train = next((item for item in trainData))
-
-    if int(train["Duein"]) != 1:
-        print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
-    else:
-        print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+        
+        i = 0
+        iterdata = iter(item for item in trainData)
+        
+        while i < len(trainData):
+            train = next((iterdata))
+            if int(train["Duein"]) != 1:
+                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
+            else:
+                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+            i = i + 1
 
 elif tloc == 1:
     # Find the train you want
