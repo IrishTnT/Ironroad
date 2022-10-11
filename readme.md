@@ -13,3 +13,13 @@ Install required packages through [pip](https://pypi.org/project/pip/).
 
 ### Credits
 Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the project would've been canned if you didn't save it!
+
+### To-Do List
+- Query Trains
+- Query Stations
+- Query Out-of-Service lifts
+- Google Maps Integration to show trains, routes, stations, etc.
+- Calculate average delay on
+- - Route
+- - all routes
+- Discord bot.
