@@ -49,6 +49,47 @@ if tloc == 1:
 elif tloc == 0: # [S] Station Query
     sparseloop = 0
     stype = input("What station do you want to query\n")
+    
+    while sparseloop == 0:
+        if len(stype) < 4:
+            stype = input("<STATION NAME MUST BE 4 LETTERS OR LONGER!>\nWhat station do you want to query\n")
+        
+        requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationsFilterXML?StationText='+stype.replace(' ', '%20')
+        root = ET.parse(urllib.request.urlopen(requestURL)).getroot()
+        
+        stationdata = []
+        
+        for child in root:
+            # loops through all child elements of root (in this case "objTrainPositions")
+            temp = {}
+            # will create an empty object for each itiration of the loop
+            for data in child:
+                # Loops through all child elements of each train 
+                # print(data.tag.split('}'))
+                # data.tag will return the name of the tag ("desination", "traindate" etc)
+                # The tags appear as "{url} name" so i split the string into an array at the character "}"
+                temp[data.tag.split("}")[1]] = data.text
+                # selects the second element in the array "['{url}', 'name']" and will create an key in the temp
+                # object with the name of the tag and the value will be the text in the tag
+            stationdata.append(temp)
+            # will add the object to the trainData array
+        if stationdata == []:
+            stype = input("<STATION NOT FOUND!>\nWhat station do you want to query\n")
+        elif len(stationdata) > 1:
+            print("MULTIPLE STATIONS FOUND!")
+            i = 0
+            iterdata = iter(item for item in stationdata)
+            
+            while i < len(stationdata):
+                station = next((iterdata))
+                print(str(i) + ".", station["StationDesc"])
+                i = i + 1
+            stype = input("Please enter Station name!\n")
+            
+        else:
+            break
+        
+    
     stime = input("How far into the future do you want to query? (5 - 90 mins)\n")
     
     # Ensuring that the user can repeatedly
