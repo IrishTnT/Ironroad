@@ -22,4 +22,8 @@ Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the pro
 - Calculate average delay on
   - Route
   - all routes
-- Discord bot.
+- Discord bot
+- Add platform information (Prediction?)
+- Route planner (Incl. transfers)
+- Bus-Replacement Alerts
+- Rail Line maintenance alerts
