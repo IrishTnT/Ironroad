@@ -20,6 +20,6 @@ Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the pro
 - Query Out-of-Service lifts
 - Google Maps Integration to show trains, routes, stations, etc.
 - Calculate average delay on
--- Route
--- all routes
+  - Route
+  - all routes
 - Discord bot.
