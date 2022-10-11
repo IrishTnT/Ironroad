@@ -13,6 +13,7 @@ import numpy
 # -> Do basic error correction. (Take Station list & compare?)
 
 
+# This is the input, deciding where the next input will take the user
 mreq = input("Which do you want to query?\nS - Stations,\nT - Trains.\n(Any other input will search for Trains.)\n")
 
 if mreq.upper() == "S":
@@ -25,6 +26,7 @@ else:
     print("\n\n---==<[TRAINS]>==---")
     tloc = 1
 
+# [T] Train type inputs
 if tloc == 1:
     # Gets which train type the User wishes to read.
     type = input("What type of train do you wish to search for?\nM - Mainline,\nD - DART,\nS- Suburban,\nA - All.\n(Any other input will search all trains.)\n")
@@ -44,9 +46,25 @@ if tloc == 1:
     else:
         print("Defaulted to ALL trains. Please wait...")
         requestURL = 'http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=A'
-elif tloc == 0:
+elif tloc == 0: # [S] Station Query
+    sparseloop = 0
     stype = input("What station do you want to query\n")
-    stime = input("How far into the future do you want to query?\n")
+    stime = input("How far into the future do you want to query? (5 - 90 mins)\n")
+    
+    # Ensuring that the user can repeatedly
+    # enter invalid values and will only
+    # continue when a correct value is entered
+    while sparseloop == 0:
+        if "." in stime:
+            stime = input("<WHOLE NUMBERS ONLY!>\nHow far into the future do you want to query? (5 - 90 mins)\n")
+        elif stime.isdigit() == False:
+            stime = input("<NUMBERS ONLY!>\nHow far into the future do you want to query? (5 - 90 mins)\n")
+        elif int(stime) < 5:
+            stime = input("<TIME TOO SHORT!>\nHow far into the future do you want to query? (5 - 9 mins)\n")
+        elif int(stime) > 90:
+            stime = input("<TIME TOO LONG!>\nHow far into the future do you want to query? (5 - 90 mins)\n")
+        else:
+            break
 
     requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + stype.replace(' ', '%20') + '&NumMins=' + stime
     print("Querying", stype.upper() + ",", stime, "minutes into the future. Please wait...")
@@ -87,7 +105,7 @@ if tloc == 0:
         exit()
     else:
         train = []
-        
+
         i = 0
         iterdata = iter(item for item in trainData)
         
