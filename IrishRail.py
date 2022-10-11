@@ -7,10 +7,10 @@ import urllib
 import numpy
 
 ## To-Do:
-# -> Show all trains.
-# -> Fix input checks.
+# -> Show all trains on [T]
+# -> Fix input checks on [T]
 # -> Stop errors.
-# -> Do basic error correction. (Take Station list & compare?)
+# -> Do error correction on [T]
 
 
 # This is the input, deciding where the next input will take the user
@@ -166,9 +166,6 @@ elif tloc == 1:
         train = []
         
         ##for iterator in trainData:
-
-            
-        
         train = next((item for item in trainData if item["Direction"].lower() == destination.lower()), None)
         
         if train:
