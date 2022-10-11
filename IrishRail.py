@@ -6,11 +6,27 @@ import xml.etree.ElementTree as ET
 import urllib
 import numpy
 
+version = "v0.1.0"
+
 ## To-Do:
 # -> Show all trains on [T]
 # -> Fix input checks on [T]
 # -> Stop errors.
 # -> Do error correction on [T]
+
+print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+print("@@@@@@@@@@@,,,((@@@@@@@@@@@***@@@@@@@@@@")
+print("@@@@@@@@@*****(////@@@@@@@@*****@@@@@@@@")
+print("@@@@@@//******////***@@@@@@*******/@@@@@")
+print("@@@@//////****///*****,,@@@*******///@@@")
+print("@(((/////////*/*****,,,,,..*******//////")
+print("@@############@@***,,,,,...****//////((@")
+print("@@@@@#########@@@@,,,,,....****/////@@@@")
+print("@@@@@@@@######@@@@@@@..... ****//@@@@@@@")
+print("@@@@@@@@@@%%%%@@@@@@@@@..  ****@@@@@@@@@")
+print("@@@@@@@@@@@@@%@@@@@@@@@@@@ *@@@@@@@@@@@@")
+print("IRONRAIL by IrishTnT |", version)
+print("\t    IrishTnT.com\n\n")
 
 
 # This is the input, deciding where the next input will take the user
@@ -152,10 +168,16 @@ if tloc == 0:
         
         while i < len(trainData):
             train = next((iterdata))
-            if int(train["Duein"]) != 1:
-                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
-            else:
-                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+            if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
+                if int(train["Duein"]) != 1:
+                    print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
+                else:
+                    print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+            elif train["Locationtype"].lower() == "o":
+                if int(train["Duein"]) != 1:
+                    print("Train from", train["Origin"], "to", train["Direction"], "departing in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
+                else:
+                    print("Train from", train["Origin"], "to", train["Direction"], "departing in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
             i = i + 1
 
 elif tloc == 1:
@@ -182,5 +204,5 @@ elif tloc == 1:
             print("Train to", dest, "not found!")
         dest = input("Select your destination, or type 'cancel' to exit.\n ")
 
-    if extract_train_data(dest) != "N/A":
+    if extract_train_data(dest) != None:
         print("The next train is the", extract_train_data(dest)[1], "[" + extract_train_data(dest)[0] + "].", extract_train_data(dest)[2] + ".")
