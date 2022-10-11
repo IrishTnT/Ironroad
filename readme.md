@@ -1,5 +1,5 @@
 # Ironroad
-### A python Irish Rail assistant
+### A Python Irish Rail assistant
 
 Ironroad is a personal project to further my Python experience by processing the [IrishRail API](http://api.irishrail.ie/realtime/).
 
