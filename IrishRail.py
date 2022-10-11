@@ -7,13 +7,13 @@ import urllib
 import numpy
 
 ## To-Do:
-# -> Show all trains.
-# -> Fix input checks.
+# -> Show all trains on [T]
+# -> Fix input checks on [T]
 # -> Stop errors.
-# -> Do basic error correction. (Take Station list & compare?)
-# -> Fix Heuston in Stations.
+# -> Do error correction on [T]
 
 
+# This is the input, deciding where the next input will take the user
 mreq = input("Which do you want to query?\nS - Stations,\nT - Trains.\n(Any other input will search for Trains.)\n")
 
 if mreq.upper() == "S":
@@ -26,6 +26,7 @@ else:
     print("\n\n---==<[TRAINS]>==---")
     tloc = 1
 
+# [T] Train type inputs
 if tloc == 1:
     # Gets which train type the User wishes to read.
     type = input("What type of train do you wish to search for?\nM - Mainline,\nD - DART,\nS- Suburban,\nA - All.\n(Any other input will search all trains.)\n")
@@ -45,12 +46,69 @@ if tloc == 1:
     else:
         print("Defaulted to ALL trains. Please wait...")
         requestURL = 'http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=A'
-elif tloc == 0:
+elif tloc == 0: # [S] Station Query
+    sparseloop = 0
     stype = input("What station do you want to query\n")
-    stime = input("How far into the future do you want to query?\n")
+    
+    while sparseloop == 0:
+        if len(stype) < 4:
+            stype = input("<STATION NAME MUST BE 4 LETTERS OR LONGER!>\nWhat station do you want to query\n")
+        
+        requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationsFilterXML?StationText='+stype.replace(' ', '%20')
+        root = ET.parse(urllib.request.urlopen(requestURL)).getroot()
+        
+        stationdata = []
+        
+        for child in root:
+            # loops through all child elements of root (in this case "objTrainPositions")
+            temp = {}
+            # will create an empty object for each itiration of the loop
+            for data in child:
+                # Loops through all child elements of each train 
+                # print(data.tag.split('}'))
+                # data.tag will return the name of the tag ("desination", "traindate" etc)
+                # The tags appear as "{url} name" so i split the string into an array at the character "}"
+                temp[data.tag.split("}")[1]] = data.text
+                # selects the second element in the array "['{url}', 'name']" and will create an key in the temp
+                # object with the name of the tag and the value will be the text in the tag
+            stationdata.append(temp)
+            # will add the object to the trainData array
+        if stationdata == []:
+            stype = input("<STATION NOT FOUND!>\nWhat station do you want to query\n")
+        elif len(stationdata) > 1:
+            print("MULTIPLE STATIONS FOUND!")
+            i = 0
+            iterdata = iter(item for item in stationdata)
+            
+            while i < len(stationdata):
+                station = next((iterdata))
+                print(str(i) + ".", station["StationDesc"])
+                i = i + 1
+            stype = input("Please enter Station name!\n")
+            
+        else:
+            break
+        
+    
+    stime = input("How far into the future do you want to query? (5 - 90 mins)\n")
+    
+    # Ensuring that the user can repeatedly
+    # enter invalid values and will only
+    # continue when a correct value is entered
+    while sparseloop == 0:
+        if "." in stime:
+            stime = input("<WHOLE NUMBERS ONLY!>\nHow far into the future do you want to query? (5 - 90 mins)\n")
+        elif stime.isdigit() == False:
+            stime = input("<NUMBERS ONLY!>\nHow far into the future do you want to query? (5 - 90 mins)\n")
+        elif int(stime) < 5:
+            stime = input("<TIME TOO SHORT!>\nHow far into the future do you want to query? (5 - 9 mins)\n")
+        elif int(stime) > 90:
+            stime = input("<TIME TOO LONG!>\nHow far into the future do you want to query? (5 - 90 mins)\n")
+        else:
+            break
 
-    requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + stype + '&NumMins=' + stime
-    print("Querying", stype.upper(), ",", stime, "minutes into the future. Please wait...")
+    requestURL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + stype.replace(' ', '%20') + '&NumMins=' + stime
+    print("Querying", stype.upper() + ",", stime, "minutes into the future. Please wait...")
 
 root = ET.parse(urllib.request.urlopen(requestURL)).getroot()
 
@@ -76,20 +134,29 @@ for child in root:
     trainData.append(temp)
     # will add the object to the trainData array
 
-# print(trainData)
+#print(trainData)
 with open("./test.json", "w") as f:
     f.write(json.dumps(trainData, indent = 4, sort_keys = True))
     # This just dumps the data into a json file
 
 if tloc == 0:
-    train = []
     
-    train = next((item for item in trainData))
-
-    if int(train["Duein"]) != 1:
-        print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
+    if trainData == []:
+        print("No trains found, or the station does not exist.")
+        exit()
     else:
-        print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+        train = []
+
+        i = 0
+        iterdata = iter(item for item in trainData)
+        
+        while i < len(trainData):
+            train = next((iterdata))
+            if int(train["Duein"]) != 1:
+                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
+            else:
+                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+            i = i + 1
 
 elif tloc == 1:
     # Find the train you want
@@ -99,16 +166,13 @@ elif tloc == 1:
         train = []
         
         ##for iterator in trainData:
-
-            
-        
         train = next((item for item in trainData if item["Direction"].lower() == destination.lower()), None)
         
         if train:
             return train["PublicMessage"].replace('\\n', '\n').splitlines()
-        return "N/A"
+        return None
 
-    while extract_train_data(dest) == "N/A":
+    while extract_train_data(dest) == None:
         if dest == "cancel":
             exit()
             
