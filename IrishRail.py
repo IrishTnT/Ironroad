@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import urllib
 import numpy
 
-version = "v0.1.0"
+version = "v0.1.1"
 
 ## To-Do:
 # -> Show all trains on [T]
@@ -18,7 +18,7 @@ print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 print("@@@@@@@@@@@,,,((@@@@@@@@@@@***@@@@@@@@@@")
 print("@@@@@@@@@*****(////@@@@@@@@*****@@@@@@@@")
 print("@@@@@@//******/┏━━━━━━━━┓@@*******/@@@@@")
-print("@@@@//////****/┃IRONRAIL┃@@@*******///@@@")
+print("@@@@//////****/┃IRONRAIL┃@@*******///@@@")
 print("@(((/////////*/┃   by   ┃..*******//////")
 print("@@############@┃IrishTnT┃..****//////((@")
 print("@@@@@#########@┗━━━━━━━━┛..****/////@@@@")
@@ -168,16 +168,25 @@ if tloc == 0:
         
         while i < len(trainData):
             train = next((iterdata))
+            
             if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
-                if int(train["Duein"]) != 1:
-                    print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
-                else:
-                    print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+                intype = "arriving in"
             elif train["Locationtype"].lower() == "o":
-                if int(train["Duein"]) != 1:
-                    print("Train from", train["Origin"], "to", train["Direction"], "departing in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
-                else:
-                    print("Train from", train["Origin"], "to", train["Direction"], "departing in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+                intype = "departing in"
+                
+            if int(train["Late"]) < 0:
+                ## This next line is plague-inducing. It's really bad, but its is REQUIRED.
+                runningtype = "".join(("Running ", str(abs(int(train["Late"]))), " minutes early."))
+            elif int(train["Late"]) == 0:
+                runningtype = "Running on time."
+            else:
+                runningtype = "".join(("Running ", train["Late"], " minutes late."))
+            
+            if int(train["Duein"]) != 1:
+                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+            else:
+                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                
             i = i + 1
 
 elif tloc == 1:
