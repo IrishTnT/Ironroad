@@ -13,6 +13,7 @@ version = "v0.1.1"
 # -> Fix input checks on [T]
 # -> Stop errors.
 # -> Do error correction on [T]
+# -> Choose Depart & Arrive [S]
 
 print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 print("@@@@@@@@@@@,,,((@@@@@@@@@@@***@@@@@@@@@@")
