@@ -1,3 +1,9 @@
+# This is legacy spaghetti code prior to the 0.2.X re-write.
+# Features are still being carried over, and this file exists
+# for archival reasons.
+# It's missing core 0.2.X features, and Ironroad.py is recommended
+# over IrishRail.py
+
 from turtle import clear
 import requests
 import json
@@ -6,11 +12,28 @@ import xml.etree.ElementTree as ET
 import urllib
 import numpy
 
+version = "v0.1.1"
+
 ## To-Do:
 # -> Show all trains on [T]
 # -> Fix input checks on [T]
 # -> Stop errors.
 # -> Do error correction on [T]
+# -> Choose Depart & Arrive [S]
+
+print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+print("@@@@@@@@@@@,,,((@@@@@@@@@@@***@@@@@@@@@@")
+print("@@@@@@@@@*****(////@@@@@@@@*****@@@@@@@@")
+print("@@@@@@//******/┏━━━━━━━━┓@@*******/@@@@@")
+print("@@@@//////****/┃IRONRAIL┃@@*******///@@@")
+print("@(((/////////*/┃   by   ┃..*******//////")
+print("@@############@┃IrishTnT┃..****//////((@")
+print("@@@@@#########@┗━━━━━━━━┛..****/////@@@@")
+print("@@@@@@@@######@@@@@@@..... ****//@@@@@@@")
+print("@@@@@@@@@@%%%%@@@@@@@@@..  ****@@@@@@@@@")
+print("@@@@@@@@@@@@@%@@@@@@@@@@@@ *@@@@@@@@@@@@")
+print("IRONRAIL by IrishTnT |", version)
+print("\t    IrishTnT.com\n\n")
 
 
 # This is the input, deciding where the next input will take the user
@@ -152,10 +175,25 @@ if tloc == 0:
         
         while i < len(trainData):
             train = next((iterdata))
-            if int(train["Duein"]) != 1:
-                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minutes. Running", train["Late"], "minutes late.")
+            
+            if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
+                intype = "arriving in"
+            elif train["Locationtype"].lower() == "o":
+                intype = "departing in"
+                
+            if int(train["Late"]) < 0:
+                ## This next line is plague-inducing. It's really bad, but its is REQUIRED.
+                runningtype = "".join(("Running ", str(abs(int(train["Late"]))), " minutes early."))
+            elif int(train["Late"]) == 0:
+                runningtype = "Running on time."
             else:
-                print("Train from", train["Origin"], "to", train["Direction"], "arriving in", train["Duein"], "minute. Running", train["Late"], "minutes late.")
+                runningtype = "".join(("Running ", train["Late"], " minutes late."))
+            
+            if int(train["Duein"]) != 1:
+                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+            else:
+                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                
             i = i + 1
 
 elif tloc == 1:
@@ -182,5 +220,5 @@ elif tloc == 1:
             print("Train to", dest, "not found!")
         dest = input("Select your destination, or type 'cancel' to exit.\n ")
 
-    if extract_train_data(dest) != "N/A":
+    if extract_train_data(dest) != None:
         print("The next train is the", extract_train_data(dest)[1], "[" + extract_train_data(dest)[0] + "].", extract_train_data(dest)[2] + ".")
