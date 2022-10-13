@@ -1,3 +1,9 @@
+# This is legacy spaghetti code prior to the 0.2.X re-write.
+# Features are still being carried over, and this file exists
+# for archival reasons.
+# It's missing core 0.2.X features, and Ironroad.py is recommended
+# over IrishRail.py
+
 from turtle import clear
 import requests
 import json
