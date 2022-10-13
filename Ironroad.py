@@ -1,4 +1,5 @@
 from turtle import clear, goto
+from pathlib import Path
 from thefuzz import fuzz
 from thefuzz import process
 import requests
@@ -7,67 +8,27 @@ import re
 import xml.etree.ElementTree as ET
 import urllib
 import numpy
-from pathlib import Path
+import logging
+
+# The structure of:
+#   Function Declaration - %1%
+#   Pre-initialising     - %2%
+#   Initialising         - %3%
+#   main                 - %4%
+# is used here under advice.
+# CTRL + F phrases are provided for each section.
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.2"
-
-aSP = Path("./allstations.json")
-if aSP.is_file():
-    if debug == 1:
-        print("[DEBUG] allstations.json exists")
-else:
-    if debug == 1:
-        print("[DEBUG] allstations.json doesn't exist. Grabbing.")
-    parsed = []
-
-    root = ET.parse(urllib.request.urlopen("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML")).getroot()
-    if debug == 1:
-        print("[DEBUG] API returned, parsing...")
-    
-    for child in root:
-        # loops through all child elements of root (in this case "objTrainPositions")
-        temp = {}
-        # will create an empty object for each itiration of the loop
-        for data in child:
-            # Loops through all child elements of each train
-            # print(data.tag.split('}'))
-            # data.tag will return the name of the tag ("desination", "traindate" etc)
-            # The tags appear as "{url} name" so i split the string into an array at the character "}"
-            temp[data.tag.split("}")[1]] = data.text
-            # selects the second element in the array "['{url}', 'name']" and will create an key in the temp
-            # object with the name of the tag and the value will be the text in the tag
-        parsed.append(temp) # Adds temp to the array.
-    
-    if debug == 1:
-        print("[DEBUG] Parse complete. Writing allstations.json")
-    with open("allstations.json", "w") as f:
-        f.write(json.dumps(parsed, indent = 4, sort_keys = True)) # This just dumps the data into a json file
-        
+version = "v0.2.3"        
 
 ## To-Do:
 # -> Show all trains on [T]
-# -> Fix input checks on [T]
+# -> Write T [T]
 # -> Stop errors.
 # -> Do error correction on [T]
 # -> Choose depart and arrive [S]
 
-print("            .-:           .:            ")
-print("          .--=+=.         .==:          ")
-print("        :----====-.       .=+++:        ")
-print("      :===---=====--.     .=+++++-      ")
-print("    :=======-====----:.   .=+++++++-    ")
-print("  :=+===========-----:::  .=+++++++++-  ")
-print(":++++++++++++==-----::::..:+++++++*****:")
-print(" :***********: :---::::...:+++++*****+: ")
-print("   :*********:   :::::....:+++++***+:   ")
-print("     :*######:     .:.....:+++++*+:     ")
-print("       :*####:       .... :+++++:       ")
-print("         :*##:            :++=:         ")
-print("           :*:            :=:           ")
-
-print("IRONRAIL by IrishTnT |", version)
-print("\t    IrishTnT.com\n\n")
+# Functions are declared here! %1%
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 # parseData is used in all subquent  ┃
@@ -79,24 +40,25 @@ print("\t    IrishTnT.com\n\n")
 def parseData(URL, fileTitle = ""):
     parsed = []
 
+    # Thanks to Saetom for the genius work of this parsing.
     root = ET.parse(urllib.request.urlopen(URL)).getroot()
     if debug == 1:
         print("[DEBUG] API returned, parsing...")
     
     for child in root:
-        # loops through all child elements of root (in this case "objTrainPositions")
+        # Loops through all child elements of the XML root.
         temp = {}
-        # will create an empty object for each itiration of the loop
+        # Creating an empty object each time the loop runs.
         for data in child:
-            # Loops through all child elements of each train 
-            # print(data.tag.split('}'))
-            # data.tag will return the name of the tag ("desination", "traindate" etc)
-            # The tags appear as "{url} name" so i split the string into an array at the character "}"
+            # Loops through all the child elements in each element.
+            # data.tag returns the name of the tag.
+            # Tags appear with the URL included, splitting the string into an array at '}'.
             temp[data.tag.split("}")[1]] = data.text
-            # selects the second element in the array "['{url}', 'name']" and will create an key in the temp
-            # object with the name of the tag and the value will be the text in the tag
-        parsed.append(temp) # Adds temp to the array.
+            # Since all (good) languages index from '0', this selects the name part of "['{url}', 'name']" and makes it
+            # a key in temp with the name of the tag, and its value.
+        parsed.append(temp) # Adding temp to the array.
     
+    # File writing is an optional extra and will only write a file if a filename is given.
     if len(fileTitle) != "":
         if debug == 1:
             print("[DEBUG] Parse complete. Writing file with name:", fileTitle)
@@ -170,6 +132,7 @@ def stationSearch():
     if nameCheck == []:
         itwo = 0
         sCheck = []
+        sFound = 0
         itertwo = iter(itemtwo for itemtwo in allStations)
         
         while itwo < len(allStations):
@@ -178,7 +141,12 @@ def stationSearch():
             # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
             if fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
                 print("<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?")
+                sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
             itwo += 1
+        
+        # Should the function not find anything, it says this.
+        if sFound == 0:
+            print("Station cannot be found. Please try again.")
             
         # Recursive function calling to keep function short.
         stationSearch()
@@ -195,13 +163,13 @@ def stationSearch():
         # Recursive call.
         stationSearch()
     elif len(nameCheck) == 1:
-        # Now shows all the trains in that list.
+        # Since there is exactly one result, create array called train which holds all of the train data..
         train = []
 
         i = 0
         iterdata = iter(item for item in station)
         
-        # Iterating through all the elements in the parsed JSON file.
+        # Iterating through all the trains found at that station and put into train.
         while i < len(station):
             train = next((iterdata))
             
@@ -226,4 +194,44 @@ def stationSearch():
                 
             i += 1
 
-stationSearch()
+# In pre-initialising, the current list of stations must be gathered for comparison. %2%
+def pre_init():
+    aSP = Path("./allstations.json")
+    if aSP.is_file():
+        if debug == 1:
+            print("[DEBUG] allstations.json exists")
+    else:
+        if debug == 1:
+            print("[DEBUG] allstations.json doesn't exist. Grabbing.")
+            
+        parseData("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML", "allstations")
+        
+        if debug == 1:
+            print("[DEBUG] Parse complete. Writing allstations.json")
+
+# Initialising creates the splash. %3%
+def init():
+    print("            .-:           .:            ")
+    print("          .--=+=.         .==:          ")
+    print("        :----====-.       .=+++:        ")
+    print("      :===---=====--.     .=+++++-      ")
+    print("    :=======-====----:.   .=+++++++-    ")
+    print("  :=+===========-----:::  .=+++++++++-  ")
+    print(":++++++++++++==-----::::..:+++++++*****:")
+    print(" :***********: :---::::...:+++++*****+: ")
+    print("   :*********:   :::::....:+++++***+:   ")
+    print("     :*######:     .:.....:+++++*+:     ")
+    print("       :*####:       .... :+++++:       ")
+    print("         :*##:            :++=:         ")
+    print("           :*:            :=:           ")
+
+    print("IRONRAIL by IrishTnT |", version)
+    print("\t    IrishTnT.com\n\n")
+    
+# Body of code %4%
+if __name__ == "__main__":
+    pre_init()
+    
+    init()
+    
+    stationSearch()
