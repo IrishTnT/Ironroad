@@ -10,27 +10,27 @@ import numpy
 from pathlib import Path
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.1"
+version = "v0.2.2"
 
 aSP = Path("./allstations.json")
 if aSP.is_file():
     if debug == 1:
-        print("allstations.json exists")
+        print("[DEBUG] allstations.json exists")
 else:
     if debug == 1:
-        print("allstations.json doesn't exist. Grabbing.")
+        print("[DEBUG] allstations.json doesn't exist. Grabbing.")
     parsed = []
 
     root = ET.parse(urllib.request.urlopen("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML")).getroot()
     if debug == 1:
-        print("API returned, parsing...")
+        print("[DEBUG] API returned, parsing...")
     
     for child in root:
         # loops through all child elements of root (in this case "objTrainPositions")
         temp = {}
         # will create an empty object for each itiration of the loop
         for data in child:
-            # Loops through all child elements of each train 
+            # Loops through all child elements of each train
             # print(data.tag.split('}'))
             # data.tag will return the name of the tag ("desination", "traindate" etc)
             # The tags appear as "{url} name" so i split the string into an array at the character "}"
@@ -40,7 +40,7 @@ else:
         parsed.append(temp) # Adds temp to the array.
     
     if debug == 1:
-        print("Parse complete. Writing allstations.json")
+        print("[DEBUG] Parse complete. Writing allstations.json")
     with open("allstations.json", "w") as f:
         f.write(json.dumps(parsed, indent = 4, sort_keys = True)) # This just dumps the data into a json file
         
@@ -81,7 +81,7 @@ def parseData(URL, fileTitle = ""):
 
     root = ET.parse(urllib.request.urlopen(URL)).getroot()
     if debug == 1:
-        print("API returned, parsing...")
+        print("[DEBUG] API returned, parsing...")
     
     for child in root:
         # loops through all child elements of root (in this case "objTrainPositions")
@@ -99,15 +99,15 @@ def parseData(URL, fileTitle = ""):
     
     if len(fileTitle) != "":
         if debug == 1:
-            print("Parse complete. Writing file with name:", fileTitle)
+            print("[DEBUG] Parse complete. Writing file with name:", fileTitle)
         with open(fileTitle + ".json", "w") as f:
             f.write(json.dumps(parsed, indent = 4, sort_keys = True)) # This just dumps the data into a json file
         
         if debug == 1:    
-            print("File written!")
+            print("[DEBUG] File written!")
     else:
         if debug == 1:
-            print("Parse Complete.")
+            print("[DEBUG] Parse Complete.")
     
     return parsed
 
@@ -126,6 +126,9 @@ def parseData(URL, fileTitle = ""):
 # state that it cannot find the input. ┃
 #--------------------------------------┃
 # stationSearch does not save files.   ┃
+# stationSearch also does not accept   ┃
+# arguments when called just yet, all  ┃
+# variable gathering is done internally┃
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 def stationSearch():
     intx = 0
@@ -133,30 +136,37 @@ def stationSearch():
     sName = input("Enter station name: ")
     sTime = input("Enter time range (5 - 90 mins): ")
     aSt = open("allstations.json", 'r', encoding = 'UTF-8')
+    # This allows my magnum opus to actually work.
+    # When loading a JSON file from disk, ALWAYS do a json.load()
     allStations = json.load(aSt)
     
+    # Data input, stuck in an infinite loop so you can re-enter correct data
+    # if you fail the original input checking.
     while intx == 0:
         if len(sName) < 4:
             sName = input("<Search must be 4+ letters.>\nEnter station name: ")
         
         if "." in sTime:
-            sTime("<Whole numbers only>\nEnter time range (5 - 90 mins): ")
+            sTime = input("<Whole numbers only>\nEnter time range (5 - 90 mins): ")
         elif sTime.isdigit() == False:
-            sTime("<Enter numbers only>\nEnter time range (5 - 90 mins): ")
+            sTime = input("<Enter numbers only>\nEnter time range (5 - 90 mins): ")
         elif int(sTime) < 5:
-            sTime("<Range too short>\nEnter time range (5 - 90 mins): ")
+            sTime = input("<Range too short>\nEnter time range (5 - 90 mins): ")
         elif int(sTime) > 90:
-            sTime("<Range too long>\nEnter time range (5 - 90 mins): ")
+            sTime = input("<Range too long>\nEnter time range (5 - 90 mins): ")
         else:
             print("Searching for...", sName + ",", sTime, "minutes in the future.")
             URL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + sName.replace(' ', '%20') + '&NumMins=' + sTime
             sCheckName = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationsFilterXML?StationText=' + sName.replace(' ', '%20')
             break
-            
+     
+    # There is most likely an improved implementation that can be done here.
+    # station calls the API to get trains, nameCheck calls a different part
+    # of the API to see if the station even exists.       
     station = parseData(URL)
     nameCheck = parseData(sCheckName)
     
-    # Now checks doing station checking
+    # Completing station checking now.
     if nameCheck == []:
         itwo = 0
         sCheck = []
@@ -166,9 +176,11 @@ def stationSearch():
             sCheck = next((itertwo))
             
             # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
-            if fuzz.ratio(sCheck["StationDesc"], sName) > 70:
+            if fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
                 print("<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?")
             itwo = itwo + 1
+            
+        # Recursive function calling to keep function short.
         stationSearch()
     elif len(nameCheck) > 1:
         print("Multiple stations with that name have been found!")
@@ -179,17 +191,21 @@ def stationSearch():
             nameCheck = next((iterdata))
             print(nameCheck["StationDesc"])
             i = i + 1
+        
+        # Recursive call.
         stationSearch()
     elif len(nameCheck) == 1:
-        # Now shows the relevant data.
+        # Now shows all the trains in that list.
         train = []
 
         i = 0
         iterdata = iter(item for item in station)
         
+        # Iterating through all the elements in the parsed JSON file.
         while i < len(station):
             train = next((iterdata))
             
+            # Arriving / Departing and Early/Late/On-Time is done here to keep code modular and to shorten printing.
             if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
                 intype = "arriving in"
             elif train["Locationtype"].lower() == "o":
