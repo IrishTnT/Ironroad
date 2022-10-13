@@ -178,7 +178,7 @@ def stationSearch():
             # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
             if fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
                 print("<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?")
-            itwo = itwo + 1
+            itwo += 1
             
         # Recursive function calling to keep function short.
         stationSearch()
@@ -190,7 +190,7 @@ def stationSearch():
         while i < len(nameCheck):
             nameCheck = next((iterdata))
             print(nameCheck["StationDesc"])
-            i = i + 1
+            i += 1
         
         # Recursive call.
         stationSearch()
@@ -224,6 +224,6 @@ def stationSearch():
             else:
                 print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
                 
-            i = i + 1
+            i += 1
 
 stationSearch()
