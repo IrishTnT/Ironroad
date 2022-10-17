@@ -180,8 +180,10 @@ def stationSearch():
                 intype = "departing in"
                 
             if int(train["Late"]) < 0:
-                ## This next line is plague-inducing. It's really bad, but its is REQUIRED.
-                runningtype = "".join(("Running ", str(abs(int(train["Late"]))), " minutes early."))
+                ## Putting together the early phrase, it's an absolute as the API reports earliness
+                ## as a minus number.
+                time_early = str(abs(int(train["Late"])))
+                runningtype = "".join(("Running ", time_early, " minutes early."))
             elif int(train["Late"]) == 0:
                 runningtype = "Running on time."
             else:
