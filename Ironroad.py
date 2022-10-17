@@ -1,13 +1,9 @@
-from turtle import clear, goto
 from pathlib import Path
 from thefuzz import fuzz
 from thefuzz import process
-import requests
 import json
-import re
 import xml.etree.ElementTree as ET
 import urllib
-import numpy
 import logging
 
 # The structure of:
