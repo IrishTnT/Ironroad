@@ -252,6 +252,9 @@ def trainSearch():
     
     tDest = input("Enter your destination: ")
     
+    # Lock exists to prevent the 'No trains found' code from executing if trains were, actually, found.
+    Lock = 0
+    
     # Doing some input fixing.
     if "to " not in tDest.lower():
         
@@ -264,6 +267,9 @@ def trainSearch():
         chosenTrains = next((iterdata))
 
         if chosenTrains["Direction"].lower() == tDest.lower():
+            # 'No trains found' will not execute.
+            Lock = 1
+
             # Relevant information is stored in <PublicMessage> which I need to parse.
             pmRaw = chosenTrains["PublicMessage"].replace('\\n', '\n').splitlines()
             
@@ -306,16 +312,17 @@ def trainSearch():
                 offScheduledTime = (ostRaw[1].split())[0]
 
                 # Setting Off-Schedule Phrase based on the OST
+                # I know this looks bad, but I need to do it this way. I've done it in stationSearch, too.
                 if int(offScheduledTime) < -1:
-                    offSchedulePhrase = offScheduledTime + " minutes early."
+                    offSchedulePhrase = str(abs(int(offScheduledTime))) + " minutes early."
                 elif int(offScheduledTime) == -1:
-                    offSchedulePhrase = offScheduledTime + " minute early."
+                    offSchedulePhrase = str(abs(int(offScheduledTime))) + " minute early."
                 elif int(offScheduledTime) == 0:
                     offSchedulePhrase = "on schedule."
                 elif int(offScheduledTime) == 1:
-                    offSchedulePhrase = offScheduledTime + " minute late."
+                    offSchedulePhrase = str(abs(int(offScheduledTime))) + " minute late."
                 elif int(offScheduledTime) > 1:
-                    offSchedulePhrase = offScheduledTime + " minutes late."
+                    offSchedulePhrase = str(abs(int(offScheduledTime))) + " minutes late."
 
                 # Finally, grabbing the stop data.
                 stopData = pmRaw[2].replace('Departed ', '').replace('Arrived ', '').split(' next stop ')
@@ -333,6 +340,10 @@ def trainSearch():
                 print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
             
         itrains += 1
+
+    if Lock == 0:
+        print("\nSTATION NOT FOUND! PLEASE TRY AGAIN!\n")
+        trainSearch()
 
 # In pre-initialising, the current list of stations must be gathered for comparison. %2%
 def pre_init():
