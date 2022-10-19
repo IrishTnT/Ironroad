@@ -91,6 +91,9 @@ def parseData(URL, fileTitle = ""):
 # stationSearch also does not accept   ┃
 # arguments when called just yet, all  ┃
 # variable gathering is done internally┃
+#--------------------------------------┃
+# All data input is handled internally ┃
+# and this function cannot handle      ┃
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 def stationSearch():
     intx = 0
@@ -124,7 +127,7 @@ def stationSearch():
      
     # There is most likely an improved implementation that can be done here.
     # station calls the API to get trains, nameCheck calls a different part
-    # of the API to see if the station even exists.       
+    # of the API to see if the station even exists.
     station = parseData(URL)
     nameCheck = parseData(sCheckName)
     
@@ -195,6 +198,126 @@ def stationSearch():
                 print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
                 
             i += 1
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# trainSeach can be used to find all   ┃
+# trains currently going to the set    ┃
+# destination, or starting in the      ┃
+# next 10 minutes.                     ┃
+# Interestingly, Irish Rail has this   ┃
+# weird thing:                         ┃
+# "Direction is either Northbound or   ┃
+# Southbound for trains between Dundalk┃
+# and Rosslare and between Sligo and   ┃
+# Dublin."                             ┃
+# I don't really know why they do this,┃
+# but they do, and this handles it.    ┃
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+def trainSearch():
+    allTrains = []
+    chosenTrains = []
+    itrains = 0
+    URL = ""
+    aTrainsURL = "http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=A"
+    
+    tChoice = input("Please select your choice of train:\n(M)ainline\n(D)ART\n(S)uburban\n(A)ll Trains\n")
+    
+    # Doing Choice Parsing
+    if tChoice.lower() == "m" or tChoice.lower() == "mainline":
+        print("Selected Mainline trains.")
+        URL = "http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=M"
+    elif tChoice.lower() == "d" or tChoice.lower() == "dart":
+        print("Selected DART trains.")
+        URL = "http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=D"
+    elif tChoice.lower() == "s" or tChoice.lower() == "suburban":
+        print("Selected Suburban trains.")
+        URL = "http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=S"
+    elif tChoice.lower() == "a" or tChoice.lower() == "all" or tChoice.lower() == "all trains":
+        print("Selected all trains.")
+        URL = "http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=A"
+    else:
+        print("Improper choice entered, please try again.")
+        
+        # Recurisve call.
+        trainSearch()
+
+    # There is most likely an improved implementation that can be done here.
+    # chosenTrains calls the API to get trains of that line, allTrains calls
+    # all trains to see if the destination they are about to search is on
+    # another line.
+    chosenTrains = parseData(URL, "choicetrains")
+    allTrains = parseData(aTrainsURL, "alltrains")
+    
+    tDest = input("Enter your destination: ")
+    
+    # Doing some input fixing.
+    if "to " not in tDest.lower():
+        
+        tDest = "to " + tDest
+    
+    # Now showing all the locations of that destination.
+    iterdata = iter(item for item in chosenTrains)
+    
+    while itrains < len(chosenTrains):
+        chosenTrains = next((iterdata))
+        if chosenTrains["Direction"].lower() == tDest.lower():
+            # Relevant information is stored in <PublicMessage> which I need to parse.
+            pmRaw = chosenTrains["PublicMessage"].replace('\\n', '\n').splitlines()
+            
+            # To make the returned print more legible at first-glance, I must
+            # reconstruct pmRaw into pmData with some tom-foolery.
+            # Since some data is in different places depending on TrainStatus,
+            # that must be accounted for here.
+            if chosenTrains["TrainStatus"].lower() == "n":
+                # I hate this. I REALLY hate this, but it has to happen.
+                # This gets the Departure time of the not-yet-departed train
+                # and places it in the pmData array where it will exist if
+                # it had departed.
+                tDepTime = (pmRaw[-1].split())[-1]
+                
+                # pmData structure for a scheduled train is as follows:
+                # 0 = Train Code
+                # 1 = Route Name
+                # 2 = Expected Departure Time
+                pmData = [pmRaw[0], pmRaw[1], tDepTime]
+                
+                print("The next train to", tDest, "is the", pmData[1], "train. Expected departure", pmData[2])
+            elif chosenTrains["TrainStatus"].lower() == "r":
+                # It gets worse this time. So much worse.
+                pmBod = pmRaw[1].split()
+                tDepTime = pmBod[0]
+                
+                # Because multi-word stations exist, I have to deal with that.
+                # At current this only handles two-word stations, this will be
+                # fixed at some point.
+                if pmBod[3] == "to":
+                    tOrig = pmBod[2]
+                    
+                    if len[pmBod] < 5:
+                        tDest = pmBod[4]
+                    elif len[pmBod] == 5:
+                        tDest = pmBod[4] + " " + pmBod[5] 
+                elif pmBod[4] == "to":
+                    tOrig = pmBod[2] + " " + pmBod[3]
+                    
+                    if len[pmBod] < 6:
+                        tDest = pmBod[5]
+                    elif len[pmBod] == 7:
+                        tDest = pmBod[5] + " " + pmBod[6]
+                
+                
+                # pmData structure for a running train is as follows:
+                # 0 = Train Code
+                # 1 = Departure Time
+                # 2 = Origin
+                # 3 = Destinatiom
+                # 4 = Off-Schedule Time
+                # 5 = Previous Stop
+                # 6 = Next Stop
+                pmData = [pmRaw[0], tDepTime]
+            
+        
+        itrains += 1
 
 # In pre-initialising, the current list of stations must be gathered for comparison. %2%
 def pre_init():
