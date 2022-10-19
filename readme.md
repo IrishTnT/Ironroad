@@ -16,13 +16,11 @@ Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the pro
 
 ### To-Do List
 - Query Trains (0.2.4)
-- Query Out-of-Service lifts (I've e-mailed Irish Rail about adding this to the API)
-- Google Maps Integration to show trains, routes, stations, etc. (0.3)
-- Calculate average delay on (0.3)
+- Google Maps Integration to show trains, routes, stations, etc. (0.3.x)
+- Calculate average delay on (0.3.x)
   - Route
   - all routes
-- Discord bot (0.3)
-- Add platform information (Needs Tensorflow and more data, 0.4)
-- Route planner (Incl. transfers) (0.4)
-- Bus-Replacement Alerts (Needs more data, 0.4)
-- Rail Line maintenance alerts (Needs more data, 0.4)
+- Discord bot (0.3.x)
+- Route planner (Incl. transfers) (0.4.x)
+- Bus-Replacement Alerts (Needs more data, 0.4.x)
+- Rail Line maintenance alerts (Needs more data, 0.4.x)
