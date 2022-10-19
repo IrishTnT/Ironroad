@@ -1,13 +1,10 @@
-from turtle import clear, goto
 from pathlib import Path
 from thefuzz import fuzz
 from thefuzz import process
-import requests
 import json
-import re
 import xml.etree.ElementTree as ET
 import urllib
-import numpy
+import urllib.request
 import logging
 
 # The structure of:
@@ -182,14 +179,19 @@ def stationSearch():
             elif train["Locationtype"].lower() == "o":
                 intype = "departing in"
                 
-            if int(train["Late"]) < 0:
+            if int(train["Late"]) < -1:
                 ## Putting together the early phrase, it's an absolute as the API reports earliness
                 ## as a minus number.
                 time_early = str(abs(int(train["Late"])))
                 runningtype = "".join(("Running ", time_early, " minutes early."))
+            elif int(train["Late"]) == -1:
+                time_early = str(abs(int(train["Late"])))
+                runningtype = "".join(("Running ", time_early, " minute early."))
             elif int(train["Late"]) == 0:
                 runningtype = "Running on time."
-            else:
+            elif int(train["Late"]) == 1:
+                runningtype = "".join(("Running ", train["Late"], " minute late."))
+            elif int(train["Late"]) > 1:
                 runningtype = "".join(("Running ", train["Late"], " minutes late."))
             
             if int(train["Duein"]) != 1:
@@ -257,9 +259,10 @@ def trainSearch():
     
     # Now showing all the locations of that destination.
     iterdata = iter(item for item in chosenTrains)
-    
+
     while itrains < len(chosenTrains):
         chosenTrains = next((iterdata))
+
         if chosenTrains["Direction"].lower() == tDest.lower():
             # Relevant information is stored in <PublicMessage> which I need to parse.
             pmRaw = chosenTrains["PublicMessage"].replace('\\n', '\n').splitlines()
@@ -268,43 +271,54 @@ def trainSearch():
             # reconstruct pmRaw into pmData with some tom-foolery.
             # Since some data is in different places depending on TrainStatus,
             # that must be accounted for here.
+            
             if chosenTrains["TrainStatus"].lower() == "n":
                 # I hate this. I REALLY hate this, but it has to happen.
                 # This gets the Departure time of the not-yet-departed train
                 # and places it in the pmData array where it will exist if
                 # it had departed.
                 tDepTime = (pmRaw[-1].split())[-1]
-                
+
+                # Getting tpDest.
+                tpDest = (pmRaw[1].split(' to '))[1]
+
                 # pmData structure for a scheduled train is as follows:
                 # 0 = Train Code
-                # 1 = Route Name
-                # 2 = Expected Departure Time
-                pmData = [pmRaw[0], pmRaw[1], tDepTime]
+                # 2 = Route Name
+                # 3 = Expected Departure Time
+                pmData = [pmRaw[0], tpDest, pmRaw[1], tDepTime]
                 
-                print("The next train to", tDest, "is the", pmData[1], "train. Expected departure", pmData[2])
+                print("The next train to", tpDest, "is the", pmData[2], "train. Expected departure", pmData[3])
             elif chosenTrains["TrainStatus"].lower() == "r":
                 # It gets worse this time. So much worse.
                 pmBod = pmRaw[1].split()
                 tDepTime = pmBod[0]
-                
-                # Because multi-word stations exist, I have to deal with that.
-                # At current this only handles two-word stations, this will be
-                # fixed at some point.
-                if pmBod[3] == "to":
-                    tOrig = pmBod[2]
-                    
-                    if len[pmBod] < 5:
-                        tDest = pmBod[4]
-                    elif len[pmBod] == 5:
-                        tDest = pmBod[4] + " " + pmBod[5] 
-                elif pmBod[4] == "to":
-                    tOrig = pmBod[2] + " " + pmBod[3]
-                    
-                    if len[pmBod] < 6:
-                        tDest = pmBod[5]
-                    elif len[pmBod] == 7:
-                        tDest = pmBod[5] + " " + pmBod[6]
-                
+
+                # There are multi-word stations in the network, up to
+                # five words long, including special characters. The
+                # parsing of the Origin and Destination stops must be
+                # capable of handling that. This does that.
+                routeRaw = pmRaw[1].replace(tDepTime + ' - ', '').partition(' (')
+                routeParse = routeRaw[0].split(' to ')
+
+                # Now grabbing the Off-Schedule Time
+                ostRaw = pmRaw[1].split('(')
+                offScheduledTime = (ostRaw[1].split())[0]
+
+                # Setting Off-Schedule Phrase based on the OST
+                if int(offScheduledTime) < -1:
+                    offSchedulePhrase = offScheduledTime + " minutes early."
+                elif int(offScheduledTime) == -1:
+                    offSchedulePhrase = offScheduledTime + " minute early."
+                elif int(offScheduledTime) == 0:
+                    offSchedulePhrase = "on schedule."
+                elif int(offScheduledTime) == 1:
+                    offSchedulePhrase = offScheduledTime + " minute late."
+                elif int(offScheduledTime) > 1:
+                    offSchedulePhrase = offScheduledTime + " minutes late."
+
+                # Finally, grabbing the stop data.
+                stopData = pmRaw[2].replace('Departed ', '').replace('Arrived ', '').split(' next stop ')
                 
                 # pmData structure for a running train is as follows:
                 # 0 = Train Code
@@ -314,9 +328,10 @@ def trainSearch():
                 # 4 = Off-Schedule Time
                 # 5 = Previous Stop
                 # 6 = Next Stop
-                pmData = [pmRaw[0], tDepTime]
+                pmData = [pmRaw[0], tDepTime, routeParse[0], routeParse[1], offSchedulePhrase, stopData[0], stopData[1]]
+
+                print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
             
-        
         itrains += 1
 
 # In pre-initialising, the current list of stations must be gathered for comparison. %2%
@@ -359,4 +374,4 @@ if __name__ == "__main__":
     
     init()
     
-    stationSearch()
+    trainSearch()
