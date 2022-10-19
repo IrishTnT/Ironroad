@@ -2,6 +2,7 @@
 ### A Python Irish Rail assistant
 
 Ironroad is a personal project to further my Python experience by processing the [IrishRail API](http://api.irishrail.ie/realtime/).
+Ironroad is available under the GNU General Public License V3
 
 ## Setup
 ### Required
