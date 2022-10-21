@@ -20,13 +20,6 @@ import logging
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
 version = "v0.2.4"
 
-## To-Do:
-# -> Show all trains on [T]
-# -> Write T [T]
-# -> Stop errors.
-# -> Do error correction on [T]
-# -> Choose depart and arrive [S]
-
 # Functions are declared here! %1%
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -58,7 +51,7 @@ def parseData(URL, fileTitle = ""):
         parsed.append(temp) # Adding temp to the array.
     
     # File writing is an optional extra and will only write a file if a filename is given.
-    if len(fileTitle) != "":
+    if len(fileTitle) != 0:
         if debug == 1:
             print("[DEBUG] Parse complete. Writing file with name:", fileTitle)
         with open(fileTitle + ".json", "w") as f:
