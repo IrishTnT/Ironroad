@@ -7,6 +7,8 @@ import urllib
 import urllib.request
 import logging
 
+# BETA BRANCH CODE.
+
 # The structure of:
 #   Function Declaration - %1%
 #   Pre-initialising     - %2%
@@ -17,13 +19,6 @@ import logging
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
 version = "v0.2.4"
-
-## To-Do:
-# -> Show all trains on [T]
-# -> Write T [T]
-# -> Stop errors.
-# -> Do error correction on [T]
-# -> Choose depart and arrive [S]
 
 # Functions are declared here! %1%
 
@@ -56,7 +51,7 @@ def parseData(URL, fileTitle = ""):
         parsed.append(temp) # Adding temp to the array.
     
     # File writing is an optional extra and will only write a file if a filename is given.
-    if len(fileTitle) != "":
+    if len(fileTitle) != 0:
         if debug == 1:
             print("[DEBUG] Parse complete. Writing file with name:", fileTitle)
         with open(fileTitle + ".json", "w") as f:
@@ -247,8 +242,7 @@ def trainSearch():
     # chosenTrains calls the API to get trains of that line, allTrains calls
     # all trains to see if the destination they are about to search is on
     # another line.
-    chosenTrains = parseData(URL, "choicetrains")
-    allTrains = parseData(aTrainsURL, "alltrains")
+    chosenTrains = parseData(URL)
     
     tDest = input("Enter your destination: ")
     
@@ -259,11 +253,15 @@ def trainSearch():
     if "to " not in tDest.lower():
         
         tDest = "to " + tDest
+
+    # Resolving (issuse #12) where len(chosenTrains) reports the length of all
+    # the sub-elements within the main table, which is always 7.
+    # This is fixed by setting the while limit variable before we run the loop.
+    ctLength = len(chosenTrains)
     
     # Now showing all the locations of that destination.
     iterdata = iter(item for item in chosenTrains)
-
-    while itrains < len(chosenTrains):
+    while itrains < ctLength:
         chosenTrains = next((iterdata))
 
         if chosenTrains["Direction"].lower() == tDest.lower():
@@ -389,9 +387,9 @@ if __name__ == "__main__":
     
     choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
     
-    if choice == 1:
+    if int(choice) == 1:
         stationSearch()
-    elif choice == 2:
+    elif int(choice) == 2:
         trainSearch()
     else:
         print("Improper choice.")
