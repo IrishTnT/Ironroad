@@ -249,8 +249,7 @@ def trainSearch():
     # chosenTrains calls the API to get trains of that line, allTrains calls
     # all trains to see if the destination they are about to search is on
     # another line.
-    chosenTrains = parseData(URL, "choicetrains")
-    allTrains = parseData(aTrainsURL, "alltrains")
+    chosenTrains = parseData(URL)
     
     tDest = input("Enter your destination: ")
     
