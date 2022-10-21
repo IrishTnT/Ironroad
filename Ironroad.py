@@ -261,11 +261,15 @@ def trainSearch():
     if "to " not in tDest.lower():
         
         tDest = "to " + tDest
+
+    # Resolving (issuse #12) where len(chosenTrains) reports the length of all
+    # the sub-elements within the main table, which is always 7.
+    # This is fixed by setting the while limit variable before we run the loop.
+    ctLength = len(chosenTrains)
     
     # Now showing all the locations of that destination.
     iterdata = iter(item for item in chosenTrains)
-
-    while itrains < len(chosenTrains):
+    while itrains < ctLength:
         chosenTrains = next((iterdata))
 
         if chosenTrains["Direction"].lower() == tDest.lower():
@@ -391,9 +395,9 @@ if __name__ == "__main__":
     
     choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
     
-    if choice == 1:
+    if int(choice) == 1:
         stationSearch()
-    elif choice == 2:
+    elif int(choice) == 2:
         trainSearch()
     else:
         print("Improper choice.")
