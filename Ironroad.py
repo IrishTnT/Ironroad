@@ -385,4 +385,13 @@ if __name__ == "__main__":
     
     init()
     
-    trainSearch()
+    choice = ""
+    
+    choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
+    
+    if choice == 1:
+        stationSearch()
+    elif choice == 2:
+        trainSearch()
+    else:
+        print("Improper choice.")
