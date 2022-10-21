@@ -18,7 +18,7 @@ import logging
 # CTRL + F phrases are provided for each section.
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.4"
+version = "v0.2.5"
 
 # Functions are declared here! %1%
 
@@ -92,10 +92,9 @@ def stationSearch():
     station = []
     sName = input("Enter station name: ")
     sTime = input("Enter time range (5 - 90 mins): ")
-    aSt = open("allstations.json", 'r', encoding = 'UTF-8')
     # This allows my magnum opus to actually work.
     # When loading a JSON file from disk, ALWAYS do a json.load()
-    allStations = json.load(aSt)
+    allStations = parseData("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML")
     
     # Data input, stuck in an infinite loop so you can re-enter correct data
     # if you fail the original input checking.
@@ -211,11 +210,9 @@ def stationSearch():
 # but they do, and this handles it.    ┃
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 def trainSearch():
-    allTrains = []
     chosenTrains = []
     itrains = 0
     URL = ""
-    aTrainsURL = "http://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML_WithTrainType?TrainType=A"
     
     tChoice = input("Please select your choice of train:\n(M)ainline\n(D)ART\n(S)uburban\n(A)ll Trains\n")
     
@@ -345,18 +342,9 @@ def trainSearch():
 
 # In pre-initialising, the current list of stations must be gathered for comparison. %2%
 def pre_init():
-    aSP = Path("./allstations.json")
-    if aSP.is_file():
-        if debug == 1:
-            print("[DEBUG] allstations.json exists")
-    else:
-        if debug == 1:
-            print("[DEBUG] allstations.json doesn't exist. Grabbing.")
-            
-        parseData("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML", "allstations")
-        
-        if debug == 1:
-            print("[DEBUG] Parse complete. Writing allstations.json")
+    # Pre-Init is left empty for future expansion.
+    if debug == 1:
+        print("[DEBUG]: PRE-INIT")
 
 # Initialising creates the splash. %3%
 def init():
