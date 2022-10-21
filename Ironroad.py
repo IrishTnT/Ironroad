@@ -16,7 +16,7 @@ import logging
 # CTRL + F phrases are provided for each section.
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.3"        
+version = "v0.2.4"
 
 ## To-Do:
 # -> Show all trains on [T]
