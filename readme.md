@@ -16,7 +16,6 @@ Install required packages through [pip](https://pypi.org/project/pip/).
 Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the project would've been canned if you didn't save it!
 
 ### To-Do List
-- Query Trains (0.2.4)
 - Google Maps Integration to show trains, routes, stations, etc. (0.3.x)
 - Calculate average delay on (0.3.x)
   - Route
