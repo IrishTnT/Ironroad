@@ -127,13 +127,36 @@ def stationSearch():
         itwo = 0
         sCheck = []
         sFound = 0
+        selfLock = 0
         itertwo = iter(itemtwo for itemtwo in allStations)
         
         while itwo < len(allStations):
             sCheck = next((itertwo))
             
             # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
-            if fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
+            # Some stations in the API have multiple entries, this must be handled in this wonky way.
+            # If it wasn't handled here, if you mistyped it, it'd show the station multiple times.
+            if fuzz.ratio("Hazehatch", sName) >= 70 or fuzz.ratio("Celbridge", sName) >= 70 or fuzz.ratio("Hazehatch and Celbridge", sName) >= 70:
+                if sCheck["StationDesc"] == "Hazelhatch" and selfLock == 0:
+                    print("<Station not found!>\nDid you mean 'Hazelhatch'?")
+                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                    selfLock = 1 # Stops it printing this each and every time it checks the array.
+            elif fuzz.ratio("Park West", sName) >= 70 or fuzz.ratio("Cherry Orchard", sName) >= 70 or fuzz.ratio("Park West and Cherry Orchard", sName) >= 70:
+                if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
+                    print("<Station not found!>\nDid you mean 'Park West and Cherry Orchard'?")
+                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                    selfLock = 1 # Stops it printing this each and every time it checks the array.
+            elif fuzz.ratio("Clondalkin", sName) >= 70 or fuzz.ratio("Fonthill", sName) >= 70 or fuzz.ratio("Clondalkin and Fonthill", sName) >= 70:
+                if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
+                    print("<Station not found!>\nDid you mean 'Clondalkin'?")
+                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                    selfLock = 1 # Stops it printing this each and every time it checks the array.
+            elif fuzz.ratio("Adamstown", sName) >= 70:
+                if sCheck["StationDesc"].lower() == "adamstown" and selfLock == 0:
+                    print("<Station not found!>\nDid you mean 'Adamstown'?")
+                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                    selfLock = 1 # Stops it printing this each and every time it checks the array.
+            elif fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
                 print("<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?")
                 sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
             itwo += 1
