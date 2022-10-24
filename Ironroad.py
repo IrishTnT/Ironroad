@@ -89,6 +89,9 @@ def parseData(URL, fileTitle = ""):
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 def stationSearch():
     intx = 0
+    onListLock = 0
+    sCheckName = ""
+    nameCheck = ""
     station = []
     sName = input("Enter station name: ")
     sTime = input("Enter time range (5 - 90 mins): ")
@@ -110,76 +113,156 @@ def stationSearch():
             sTime = input("<Range too short>\nEnter time range (5 - 90 mins): ")
         elif int(sTime) > 90:
             sTime = input("<Range too long>\nEnter time range (5 - 90 mins): ")
+        # As seen later, certain stations in AllStations either have multiple entires
+        # or are weirdly written. This handles those edge-cases.
+        elif "Hazelhatch" in sName or "Celbridge" in sName:
+            onListLock = 1 # Locking the main station checking.
+            print("Searching for... Hazelhatch and Celbridge,", sTime, "minutes in the future.")
+            URL = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML_WithNumMins?StationCode=HZLCH&NumMins=' + sTime
+            break
+        elif "Park West" in sName or "Cherry Orchard" in sName:
+            onListLock = 1 # Locking the main station checking.
+            print("Searching for... Park West and Cherry Orchard,", sTime, "minutes in the future.")
+            URL = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML_WithNumMins?StationCode=CHORC&NumMins=' + sTime
+            break
+        elif "Clondalkin" in sName or "Fonthill" in sName:
+            onListLock = 1 # Locking the main station checking.
+            print("Searching for... Clondalkin and Fonthill,", sTime, "minutes in the future.")
+            URL = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML_WithNumMins?StationCode=CLDKN&NumMins=' + sTime
+            break
+        elif "Adamstown" in sName:
+            onListLock = 1 # Locking the main station checking.
+            print("Searching for... Adamstown,", sTime, "minutes in the future.")
+            URL = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML_WithNumMins?StationCode=ADMTN&NumMins=' + sTime
+            break
+        elif "Little" in sName or "Island" in sName or "LittleIsland" in sName:
+            onListLock = 1 # Locking the main station checking.
+            print("Searching for... Little Island,", sTime, "minutes in the future.")
+            URL = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationDataByCodeXML_WithNumMins?StationCode=LSLND&NumMins=' + sTime
+            break
         else:
             print("Searching for...", sName + ",", sTime, "minutes in the future.")
             URL = 'https://api.irishrail.ie/realtime/realtime.asmx/getStationDataByNameXML_withNumMins?StationDesc=' + sName.replace(' ', '%20') + '&NumMins=' + sTime
             sCheckName = 'http://api.irishrail.ie/realtime/realtime.asmx/getStationsFilterXML?StationText=' + sName.replace(' ', '%20')
+            onListLock = 0
             break
      
     # There is most likely an improved implementation that can be done here.
     # station calls the API to get trains, nameCheck calls a different part
     # of the API to see if the station even exists.
     station = parseData(URL)
-    nameCheck = parseData(sCheckName)
     
-    # Completing station checking now.
-    if nameCheck == []:
-        itwo = 0
-        sCheck = []
-        sFound = 0
-        selfLock = 0
-        itertwo = iter(itemtwo for itemtwo in allStations)
-        
-        while itwo < len(allStations):
-            sCheck = next((itertwo))
+    # This is only needed with non-edge-case stations, and is disabled to
+    # prevent issues otherwise.
+    if onListLock == 0:
+        nameCheck = parseData(sCheckName)
+    
+    # The primary search will work if the edge-case stations aren't detected.
+    # If an edge-case station is entered w/ a typo, typo-correction will show them
+    # to the user.
+    if onListLock == 0:
+        # Completing station checking now.
+        if nameCheck == []:
+            itwo = 0
+            sCheck = []
+            sFound = 0
+            selfLock = 0
+            itertwo = iter(itemtwo for itemtwo in allStations)
             
-            # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
-            # Some stations in the API have multiple entries, this must be handled in this wonky way.
-            # If it wasn't handled here, if you mistyped it, it'd show the station multiple times.
-            if fuzz.ratio("Hazehatch", sName) >= 70 or fuzz.ratio("Celbridge", sName) >= 70 or fuzz.ratio("Hazehatch and Celbridge", sName) >= 70:
-                if sCheck["StationDesc"] == "Hazelhatch" and selfLock == 0:
-                    print("<Station not found!>\nDid you mean 'Hazelhatch'?")
+            while itwo < len(allStations):
+                sCheck = next((itertwo))
+                
+                # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
+                # Some stations in the API have multiple entries, this must be handled in this wonky way.
+                # If it wasn't handled here, if you mistyped it, it'd show the station multiple times.
+                if fuzz.ratio("Hazehatch", sName) >= 70 or fuzz.ratio("Celbridge", sName) >= 70 or fuzz.ratio("Hazehatch and Celbridge", sName) >= 70:
+                    if sCheck["StationDesc"] == "Hazelhatch" and selfLock == 0:
+                        print("<Station not found!>\nDid you mean 'Hazelhatch'?")
+                        sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                        selfLock = 1 # Stops it printing this each and every time it checks the array.
+                elif fuzz.ratio("Park West", sName) >= 70 or fuzz.ratio("Cherry Orchard", sName) >= 70 or fuzz.ratio("Park West and Cherry Orchard", sName) >= 70:
+                    if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
+                        print("<Station not found!>\nDid you mean 'Park West and Cherry Orchard'?")
+                        sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                        selfLock = 1 # Stops it printing this each and every time it checks the array.
+                elif fuzz.ratio("Clondalkin", sName) >= 70 or fuzz.ratio("Fonthill", sName) >= 70 or fuzz.ratio("Clondalkin and Fonthill", sName) >= 70:
+                    if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
+                        print("<Station not found!>\nDid you mean 'Clondalkin'?")
+                        sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                        selfLock = 1 # Stops it printing this each and every time it checks the array.
+                elif fuzz.ratio("Adamstown", sName) >= 70:
+                    if sCheck["StationDesc"].lower() == "adamstown" and selfLock == 0:
+                        print("<Station not found!>\nDid you mean 'Adamstown'?")
+                        sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
+                        selfLock = 1 # Stops it printing this each and every time it checks the array.
+                elif fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
+                    print("<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?")
                     sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
-                    selfLock = 1 # Stops it printing this each and every time it checks the array.
-            elif fuzz.ratio("Park West", sName) >= 70 or fuzz.ratio("Cherry Orchard", sName) >= 70 or fuzz.ratio("Park West and Cherry Orchard", sName) >= 70:
-                if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
-                    print("<Station not found!>\nDid you mean 'Park West and Cherry Orchard'?")
-                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
-                    selfLock = 1 # Stops it printing this each and every time it checks the array.
-            elif fuzz.ratio("Clondalkin", sName) >= 70 or fuzz.ratio("Fonthill", sName) >= 70 or fuzz.ratio("Clondalkin and Fonthill", sName) >= 70:
-                if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
-                    print("<Station not found!>\nDid you mean 'Clondalkin'?")
-                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
-                    selfLock = 1 # Stops it printing this each and every time it checks the array.
-            elif fuzz.ratio("Adamstown", sName) >= 70:
-                if sCheck["StationDesc"].lower() == "adamstown" and selfLock == 0:
-                    print("<Station not found!>\nDid you mean 'Adamstown'?")
-                    sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
-                    selfLock = 1 # Stops it printing this each and every time it checks the array.
-            elif fuzz.ratio(sCheck["StationDesc"], sName) >= 70:
-                print("<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?")
-                sFound = 1 # Stops the function incorrectly reporting that station doesn't exist.
-            itwo += 1
-        
-        # Should the function not find anything, it says this.
-        if sFound == 0:
-            print("Station cannot be found. Please try again.")
+                itwo += 1
             
-        # Recursive function calling to keep function short.
-        stationSearch()
-    elif len(nameCheck) > 1:
-        print("Multiple stations with that name have been found!")
-        i = -1
-        iterdata = iter(item for item in nameCheck)
+            # Should the function not find anything, it says this.
+            if sFound == 0:
+                print("Station cannot be found. Please try again.")
+                
+            # Recursive function calling to keep function short.
+            stationSearch()
+        elif len(nameCheck) > 1:
+            print("Multiple stations with that name have been found!")
+            i = -1
+            iterdata = iter(item for item in nameCheck)
+                
+            while i < len(nameCheck):
+                nameCheck = next((iterdata))
+                print(nameCheck["StationDesc"])
+                i += 1
             
-        while i < len(nameCheck):
-            nameCheck = next((iterdata))
-            print(nameCheck["StationDesc"])
-            i += 1
-        
-        # Recursive call.
-        stationSearch()
-    elif len(nameCheck) == 1:
+            # Recursive call.
+            stationSearch()
+        elif len(nameCheck) == 1:
+            # Since there is exactly one result, create array called train which holds all of the train data..
+            train = []
+
+            i = 0
+            iterdata = iter(item for item in station)
+            
+            # Iterating through all the trains found at that station and put into train.
+            while i < len(station):
+                train = next((iterdata))
+                
+                # Arriving / Departing and Early/Late/On-Time is done here to keep code modular and to shorten printing.
+                if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
+                    intype = "arriving in"
+                elif train["Locationtype"].lower() == "o":
+                    intype = "departing in"
+                    
+                if int(train["Late"]) < -1:
+                    ## Putting together the early phrase, it's an absolute as the API reports earliness
+                    ## as a minus number.
+                    time_early = str(abs(int(train["Late"])))
+                    runningtype = "".join(("Running ", time_early, " minutes early."))
+                elif int(train["Late"]) == -1:
+                    time_early = str(abs(int(train["Late"])))
+                    runningtype = "".join(("Running ", time_early, " minute early."))
+                elif int(train["Late"]) == 0:
+                    runningtype = "Running on time."
+                elif int(train["Late"]) == 1:
+                    runningtype = "".join(("Running ", train["Late"], " minute late."))
+                elif int(train["Late"]) > 1:
+                    runningtype = "".join(("Running ", train["Late"], " minutes late."))
+                
+                if int(train["Duein"]) != 1:
+                    print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+                else:
+                    print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                    
+                i += 1
+            
+            if len(station) == 0:
+                print("No trains in found in that time frame.")
+                stationSearch()
+            
+    # This only runs when an edge-case station is entered.
+    else:
         # Since there is exactly one result, create array called train which holds all of the train data..
         train = []
 
@@ -197,8 +280,8 @@ def stationSearch():
                 intype = "departing in"
                 
             if int(train["Late"]) < -1:
-                ## Putting together the early phrase, it's an absolute as the API reports earliness
-                ## as a minus number.
+                # Putting together the early phrase, it's an absolute as the API reports earliness
+                # as a minus number.
                 time_early = str(abs(int(train["Late"])))
                 runningtype = "".join(("Running ", time_early, " minutes early."))
             elif int(train["Late"]) == -1:
@@ -217,6 +300,11 @@ def stationSearch():
                 print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
                 
             i += 1
+        
+        if len(station) == 0:
+            print("No trains in found in that time frame.")
+            stationSearch()
+        
 
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 # trainSeach can be used to find all   ┃
@@ -358,6 +446,10 @@ def trainSearch():
                 print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
             
         itrains += 1
+        
+    if ctLength == 0:
+        print("No trains in found in that time frame.")
+        trainSearch()
 
     if Lock == 0:
         print("\nSTATION NOT FOUND! PLEASE TRY AGAIN!\n")
