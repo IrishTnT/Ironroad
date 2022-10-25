@@ -350,8 +350,9 @@ def stationSearch():
 # I don't really know why they do this,┃
 # but they do, and this handles it.    ┃
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-def trainSearch():
+def trainSearch(returnData = False):
     chosenTrains = []
+    pmOut = []
     itrains = 0
     URL = ""
     
@@ -430,7 +431,8 @@ def trainSearch():
                 # 3 = Expected Departure Time
                 pmData = [pmRaw[0], tpDest, pmRaw[1], tDepTime]
                 
-                print("The next train to", tpDest, "is the", pmData[2], "train. Expected departure", pmData[3])
+                if returnData == False:
+                    print("The next train to", tpDest, "is the", pmData[2], "train. Expected departure", pmData[3])
             elif chosenTrains["TrainStatus"].lower() == "r":
                 # It gets worse this time. So much worse.
                 pmBod = pmRaw[1].split()
@@ -473,7 +475,10 @@ def trainSearch():
                 # 6 = Next Stop
                 pmData = [pmRaw[0], tDepTime, routeParse[0], routeParse[1], offSchedulePhrase, stopData[0], stopData[1]]
 
-                print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
+                if returnData == False:
+                    print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
+                else:
+                    pmOut.append(offScheduledTime)
             
         itrains += 1
         
@@ -484,6 +489,37 @@ def trainSearch():
     if Lock == 0:
         print("\nSTATION NOT FOUND! PLEASE TRY AGAIN!\n")
         trainSearch()
+    
+    if returnData:
+        return pmOut
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# punctuality is used to find the average ┃
+# punctiality of all trains operating on a┃
+# set route.                              ┃
+# At present, punctuality only uses the   ┃
+# data of all presently running trains on ┃
+# the network.                            ┃
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+def punctuality():
+    pData = trainSearch(True)
+    i = 0
+    avgOffSchedule = 0
+    
+    while i < len(pData):
+        avgOffSchedule += int(pData[i])
+        i += 1
+    
+    if i == len(pData):
+        punctuality = round(avgOffSchedule, 2)
+        
+        if punctuality < 0:
+            print("Trains to that destination are running approx.", abs(punctuality), "minutes early.")
+        elif punctuality == 0:
+            print("Trains to that destination are running approx. on-time.")
+        else:
+            print("Trains to that destination are running approx.", punctuality, "minutes late.")
+    
 
 # In pre-initialising, the current list of stations must be gathered for comparison. %2%
 def pre_init():
@@ -512,19 +548,22 @@ def init():
     
 # Body of code %4%
 if __name__ == "__main__":
-    #pre_init()
+    pre_init()
     
-    #init()
+    init()
     
-    #choice = ""
+    choice = ""
     
-    #choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
+    choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n3. punctuality()\n")
     
-    #if int(choice) == 1:
-    #    stationSearch()
-    #elif int(choice) == 2:
-    #    trainSearch()
-    #else:
-    #    print("Improper choice.")
-    app = ironroad()
-    app.run()
+    if int(choice) == 1:
+        stationSearch()
+    elif int(choice) == 2:
+        trainSearch()
+    elif int(choice) == 3:
+        punctuality()
+    else:
+        print("Improper choice.")
+    
+    #app = ironroad()
+    # app.run()
