@@ -5,6 +5,9 @@ import json
 import xml.etree.ElementTree as ET
 import urllib
 import urllib.request
+from textual.app import App, ComposeResult
+from textual.containers import Container
+from textual.widgets import Button, Header, Footer, Static
 import logging
 
 # BETA BRANCH CODE.
@@ -18,7 +21,34 @@ import logging
 # CTRL + F phrases are provided for each section.
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.5"
+version = "v0.2.6"
+
+class TimeDisplay(Static):
+    """A widget to display elapsed time."""
+
+class Stopwatch(Static):
+    """A stopwatch widget."""
+
+    def compose(self) -> ComposeResult:
+        """Create child widgets of a stopwatch."""
+        yield Button("Start", id="start", variant="success")
+        yield Button("Stop", id="stop", variant="error")
+        yield Button("Reset", id="reset")
+        yield TimeDisplay("00:00:00.00")
+
+class ironroad(App):
+    # Hi.
+    BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
+
+    def compose(self) -> ComposeResult:
+        """Create child widgets for the app."""
+        yield Header()
+        yield Footer()
+        yield Container(Stopwatch(), Stopwatch(), Stopwatch())
+
+    def action_toggle_dark(self) -> None:
+        """An action to toggle dark mode."""
+        self.dark = not self.dark
 
 # Functions are declared here! %1%
 
@@ -482,17 +512,19 @@ def init():
     
 # Body of code %4%
 if __name__ == "__main__":
-    pre_init()
+    #pre_init()
     
-    init()
+    #init()
     
-    choice = ""
+    #choice = ""
     
-    choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
+    #choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
     
-    if int(choice) == 1:
-        stationSearch()
-    elif int(choice) == 2:
-        trainSearch()
-    else:
-        print("Improper choice.")
+    #if int(choice) == 1:
+    #    stationSearch()
+    #elif int(choice) == 2:
+    #    trainSearch()
+    #else:
+    #    print("Improper choice.")
+    app = ironroad()
+    app.run()
