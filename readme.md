@@ -1,4 +1,4 @@
-<img height=125 width=500 src="ironroad.png">
+<img height=110 width=500 src="ironroad.png">
 
 ### A Python Irish Rail assistant
 
