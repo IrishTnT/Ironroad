@@ -1,4 +1,4 @@
-![Ironroad Logo](ironroad logo.png?raw=true)
+![Ironroad Logo](ironroadlogo.png)
 ### A Python Irish Rail assistant
 
 Ironroad is a personal project to further my Python experience by processing the [IrishRail API](http://api.irishrail.ie/realtime/).
