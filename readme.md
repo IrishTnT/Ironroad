@@ -1,4 +1,5 @@
-![Ironroad Logo](ironroad.png)
+<img height=125 width=500 src="ironroad.png">
+
 ### A Python Irish Rail assistant
 
 Ironroad is a personal project to further my Python experience by processing the [IrishRail API](http://api.irishrail.ie/realtime/).
