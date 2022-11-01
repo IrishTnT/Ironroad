@@ -14,7 +14,7 @@ Install required packages through [pip](https://pypi.org/project/pip/).
 `pip install -r requirements.txt`
 
 ### Credits
-Endless thanks to [Saetom](https://www.saetom.xyz/) for the API parsing, the project would've been canned if you didn't save it!
+Endless thanks to [Saetom](https://www.saetom.xyz/) for the original API parsing system.
 
 ### To-Do List
 - Google Maps Integration to show trains, routes, stations, etc. (0.3.x)
