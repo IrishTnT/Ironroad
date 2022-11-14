@@ -511,7 +511,7 @@ def punctuality():
         i += 1
     
     if i == len(pData):
-        punctuality = round(avgOffSchedule, 2)
+        punctuality = round((avgOffSchedule / i))
         
         if punctuality < 0:
             print("Trains to that destination are running approx.", abs(punctuality), "minutes early.")
@@ -566,4 +566,4 @@ if __name__ == "__main__":
         print("Improper choice.")
     
     #app = ironroad()
-    # app.run()
+    #app.run()
