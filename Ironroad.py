@@ -18,7 +18,7 @@ import logging
 # CTRL + F phrases are provided for each section.
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.5"
+version = "v0.2.7"
 
 # Functions are declared here! %1%
 
@@ -113,6 +113,7 @@ def stationSearch():
             sTime = input("<Range too short>\nEnter time range (5 - 90 mins): ")
         elif int(sTime) > 90:
             sTime = input("<Range too long>\nEnter time range (5 - 90 mins): ")
+            
         # As seen later, certain stations in AllStations either have multiple entires
         # or are weirdly written. This handles those edge-cases.
         elif "Hazelhatch" in sName or "Celbridge" in sName:
@@ -213,7 +214,7 @@ def stationSearch():
                 
             while i < len(nameCheck):
                 nameCheck = next((iterdata))
-                print(nameCheck["StationDesc"])
+                print(nameCheck["Destination"])
                 i += 1
             
             # Recursive call.
@@ -251,9 +252,9 @@ def stationSearch():
                     runningtype = "".join(("Running ", train["Late"], " minutes late."))
                 
                 if int(train["Duein"]) != 1:
-                    print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+                    print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minutes.", str(runningtype))
                 else:
-                    print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                    print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
                     
                 i += 1
             
@@ -295,9 +296,9 @@ def stationSearch():
                 runningtype = "".join(("Running ", train["Late"], " minutes late."))
             
             if int(train["Duein"]) != 1:
-                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+                print("Train from", train["Origin"], "to", train["Destinatio"], intype, train["Duein"], "minutes.", str(runningtype))
             else:
-                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
                 
             i += 1
         
@@ -320,8 +321,9 @@ def stationSearch():
 # I don't really know why they do this,┃
 # but they do, and this handles it.    ┃
 #━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-def trainSearch():
+def trainSearch(returnData = False):
     chosenTrains = []
+    pmOut = []
     itrains = 0
     URL = ""
     
@@ -371,9 +373,10 @@ def trainSearch():
     iterdata = iter(item for item in chosenTrains)
     while itrains < ctLength:
         chosenTrains = next((iterdata))
-
-        if chosenTrains["Direction"].lower() == tDest.lower():
-            # 'No trains found' will not execute.
+        
+        chosenTrainsDest = chosenTrains["PublicMessage"].lower().replace('\\n', ' ').replace('(', ' ').split(tDest.lower())
+        
+        if len(chosenTrainsDest) > 1:
             Lock = 1
 
             # Relevant information is stored in <PublicMessage> which I need to parse.
@@ -400,7 +403,8 @@ def trainSearch():
                 # 3 = Expected Departure Time
                 pmData = [pmRaw[0], tpDest, pmRaw[1], tDepTime]
                 
-                print("The next train to", tpDest, "is the", pmData[2], "train. Expected departure", pmData[3])
+                if returnData == False:
+                    print("The next train to", tpDest, "is the", pmData[2], "train. Expected departure", pmData[3])
             elif chosenTrains["TrainStatus"].lower() == "r":
                 # It gets worse this time. So much worse.
                 pmBod = pmRaw[1].split()
@@ -443,7 +447,10 @@ def trainSearch():
                 # 6 = Next Stop
                 pmData = [pmRaw[0], tDepTime, routeParse[0], routeParse[1], offSchedulePhrase, stopData[0], stopData[1]]
 
-                print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
+                if returnData == False:
+                    print("The next train to", pmData[3], "is the", pmData[1], "train from", pmData[2], "currently between", pmData[5], "and", pmData[6] + ". Running", pmData[4])
+                else:
+                    pmOut.append(offScheduledTime)
             
         itrains += 1
         
@@ -454,6 +461,37 @@ def trainSearch():
     if Lock == 0:
         print("\nSTATION NOT FOUND! PLEASE TRY AGAIN!\n")
         trainSearch()
+    
+    if returnData:
+        return pmOut
+
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# punctuality is used to find the average ┃
+# punctiality of all trains operating on a┃
+# set route.                              ┃
+# At present, punctuality only uses the   ┃
+# data of all presently running trains on ┃
+# the network.                            ┃
+#━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+def punctuality():
+    pData = trainSearch(True)
+    i = 0
+    avgOffSchedule = 0
+    
+    while i < len(pData):
+        avgOffSchedule += int(pData[i])
+        i += 1
+    
+    if i == len(pData):
+        punctuality = round((avgOffSchedule / i))
+        
+        if punctuality < 0:
+            print("Trains to that destination are running approx.", abs(punctuality), "minutes early.")
+        elif punctuality == 0:
+            print("Trains to that destination are running approx. on-time.")
+        else:
+            print("Trains to that destination are running approx.", punctuality, "minutes late.")
+    
 
 # In pre-initialising, the current list of stations must be gathered for comparison. %2%
 def pre_init():
@@ -488,11 +526,13 @@ if __name__ == "__main__":
     
     choice = ""
     
-    choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n")
+    choice = input("Please choose which you want to do:\n1. stationSearch()\n2. trainSearch()\n3. punctuality()\n")
     
     if int(choice) == 1:
         stationSearch()
     elif int(choice) == 2:
         trainSearch()
+    elif int(choice) == 3:
+        punctuality()
     else:
         print("Improper choice.")
