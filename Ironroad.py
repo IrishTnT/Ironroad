@@ -5,9 +5,6 @@ import json
 import xml.etree.ElementTree as ET
 import urllib
 import urllib.request
-from textual.app import App, ComposeResult
-from textual.containers import Container
-from textual.widgets import Button, Header, Footer, Static
 import logging
 
 # BETA BRANCH CODE.
@@ -21,34 +18,7 @@ import logging
 # CTRL + F phrases are provided for each section.
 
 debug = 0 # This will show extra information on what the code is doing, turn to 0 for a more User-friendly console experience.
-version = "v0.2.6a"
-
-class TimeDisplay(Static):
-    """A widget to display elapsed time."""
-
-class Stopwatch(Static):
-    """A stopwatch widget."""
-
-    def compose(self) -> ComposeResult:
-        """Create child widgets of a stopwatch."""
-        yield Button("Start", id="start", variant="success")
-        yield Button("Stop", id="stop", variant="error")
-        yield Button("Reset", id="reset")
-        yield TimeDisplay("00:00:00.00")
-
-class ironroad(App):
-    # Hi.
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
-
-    def compose(self) -> ComposeResult:
-        """Create child widgets for the app."""
-        yield Header()
-        yield Footer()
-        yield Container(Stopwatch(), Stopwatch(), Stopwatch())
-
-    def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode."""
-        self.dark = not self.dark
+version = "v0.2.7"
 
 # Functions are declared here! %1%
 
@@ -143,6 +113,7 @@ def stationSearch():
             sTime = input("<Range too short>\nEnter time range (5 - 90 mins): ")
         elif int(sTime) > 90:
             sTime = input("<Range too long>\nEnter time range (5 - 90 mins): ")
+            
         # As seen later, certain stations in AllStations either have multiple entires
         # or are weirdly written. This handles those edge-cases.
         elif "Hazelhatch" in sName or "Celbridge" in sName:
@@ -243,7 +214,7 @@ def stationSearch():
                 
             while i < len(nameCheck):
                 nameCheck = next((iterdata))
-                print(nameCheck["StationDesc"])
+                print(nameCheck["Destination"])
                 i += 1
             
             # Recursive call.
@@ -281,9 +252,9 @@ def stationSearch():
                     runningtype = "".join(("Running ", train["Late"], " minutes late."))
                 
                 if int(train["Duein"]) != 1:
-                    print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+                    print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minutes.", str(runningtype))
                 else:
-                    print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                    print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
                     
                 i += 1
             
@@ -325,9 +296,9 @@ def stationSearch():
                 runningtype = "".join(("Running ", train["Late"], " minutes late."))
             
             if int(train["Duein"]) != 1:
-                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minutes.", str(runningtype))
+                print("Train from", train["Origin"], "to", train["Destinatio"], intype, train["Duein"], "minutes.", str(runningtype))
             else:
-                print("Train from", train["Origin"], "to", train["Direction"], intype, train["Duein"], "minute.", str(runningtype))
+                print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
                 
             i += 1
         
@@ -402,9 +373,10 @@ def trainSearch(returnData = False):
     iterdata = iter(item for item in chosenTrains)
     while itrains < ctLength:
         chosenTrains = next((iterdata))
-
-        if chosenTrains["Direction"].lower() == tDest.lower():
-            # 'No trains found' will not execute.
+        
+        chosenTrainsDest = chosenTrains["PublicMessage"].lower().replace('\\n', ' ').replace('(', ' ').split(tDest.lower())
+        
+        if len(chosenTrainsDest) > 1:
             Lock = 1
 
             # Relevant information is stored in <PublicMessage> which I need to parse.
@@ -564,6 +536,3 @@ if __name__ == "__main__":
         punctuality()
     else:
         print("Improper choice.")
-    
-    #app = ironroad()
-    #app.run()
