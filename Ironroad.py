@@ -296,7 +296,7 @@ def stationSearch():
                 runningtype = "".join(("Running ", train["Late"], " minutes late."))
             
             if int(train["Duein"]) != 1:
-                print("Train from", train["Origin"], "to", train["Destinatio"], intype, train["Duein"], "minutes.", str(runningtype))
+                print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minutes.", str(runningtype))
             else:
                 print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
                 
