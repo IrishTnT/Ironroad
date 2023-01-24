@@ -15,13 +15,3 @@ Install required packages through [pip](https://pypi.org/project/pip/).
 
 ### Credits
 Endless thanks to [Saetom](https://www.saetom.xyz/) for the original API parsing system.
-
-### To-Do List
-- Google Maps Integration to show trains, routes, stations, etc. (0.3.x)
-- Calculate average delay on (0.3.x)
-  - Route
-  - all routes
-- Discord bot (0.3.x)
-- Route planner (Incl. transfers) (0.4.x)
-- Bus-Replacement Alerts (Needs more data, 0.4.x)
-- Rail Line maintenance alerts (Needs more data, 0.4.x)
