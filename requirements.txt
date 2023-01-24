@@ -1,1 +1,1 @@
-thefuzz[speedup]
+numpy
