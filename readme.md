@@ -1,9 +1,8 @@
 <img height=110 width=500 src="ironroad.png">
 
-### A Python Irish Rail assistant
+### Legacy Ironroad
 
-Ironroad is a personal project to further my Python experience by processing the [IrishRail API](http://api.irishrail.ie/realtime/).
-Ironroad is available under the GNU General Public License V3
+This legacy code exists for archival reasons and was completely re-written in v0.2, and re-re-written in v0.3.
 
 ## Setup
 ### Required
@@ -15,13 +14,3 @@ Install required packages through [pip](https://pypi.org/project/pip/).
 
 ### Credits
 Endless thanks to [Saetom](https://www.saetom.xyz/) for the original API parsing system.
-
-### To-Do List
-- Google Maps Integration to show trains, routes, stations, etc. (0.3.x)
-- Calculate average delay on (0.3.x)
-  - Route
-  - all routes
-- Discord bot (0.3.x)
-- Route planner (Incl. transfers) (0.4.x)
-- Bus-Replacement Alerts (Needs more data, 0.4.x)
-- Rail Line maintenance alerts (Needs more data, 0.4.x)
