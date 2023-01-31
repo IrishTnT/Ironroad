@@ -81,6 +81,7 @@ def errorBroker(errorData, toPrint):
 # unsuccessful function call. This is handled
 # by errorBroker().
 def stationSearch(stationName = "", timeSearch = 0, printData = True):
+    allStations = parseData("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML")
     intx = 0
     onListLock = 0
     sCheckName = ""
@@ -143,13 +144,155 @@ def stationSearch(stationName = "", timeSearch = 0, printData = True):
     # This checks the station name you gave it. It will return an empty list if it doesn't exist.
     station = parseData(URL)
     
-    # This check all stations with that name. This only
+    # This check all stations with that name. This only runs if it isn't an edge-case.
     if onListLock == 0:
-        nameCheck = parseData(sCheckName)
+        nameCheck = parseData(sCheckName) # Getting the trains passing through the station, this will be empty if the station does not exist.
+        
+        if nameCheck == []:
+            itwo = 0
+            sCheck = []
+            sFound = 0
+            selfLock = 0
+            itertwo = iter(itemtwo for itemtwo in allStations)
+            
+            while itwo < len(allStations):
+                sCheck = next((itertwo))
+                
+                # This is my magnum opus. It checks for similarity, and asks if you meant a different station.
+                # Some stations in the API have multiple entries, this must be handled in this wonky way.
+                # If it wasn't handled here, if you mistyped it, it'd show the station multiple times.
+                # sFound stops the function from incorrectly stating that the station does not exist if it is found.
+                # selfLock stops edge-case stations from printing the same message multiple times.
+                if fuzz.ratio("Hazehatch", stationName) >= 70 or fuzz.ratio("Celbridge", stationName) >= 70 or fuzz.ratio("Hazehatch and Celbridge", stationName) >= 70:
+                    if sCheck["StationDesc"] == "Hazelhatch" and selfLock == 0:
+                        return errorBroker("<Station not found!>\nDid you mean 'Hazelhatch'?", printData)
+                        sFound = 1
+                        selfLock = 1
+                elif fuzz.ratio("Park West", stationName) >= 70 or fuzz.ratio("Cherry Orchard", stationName) >= 70 or fuzz.ratio("Park West and Cherry Orchard", stationName) >= 70:
+                    if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
+                        return errorBroker("<Station not found!>\nDid you mean 'Park West and Cherry Orchard'?", printData)
+                        sFound = 1
+                        selfLock = 1
+                elif fuzz.ratio("Clondalkin", stationName) >= 70 or fuzz.ratio("Fonthill", stationName) >= 70 or fuzz.ratio("Clondalkin and Fonthill", stationName) >= 70:
+                    if sCheck["StationDesc"].lower() == "park west" and selfLock == 0:
+                        return errorBroker("<Station not found!>\nDid you mean 'Clondalkin'?", printData)
+                        sFound = 1
+                        selfLock = 1
+                elif fuzz.ratio("Adamstown", stationName) >= 70:
+                    if sCheck["StationDesc"].lower() == "adamstown" and selfLock == 0:
+                        return errorBroker("<Station not found!>\nDid you mean 'Adamstown'?", printData)
+                        sFound = 1
+                        selfLock = 1
+                elif fuzz.ratio(sCheck["StationDesc"], stationName) >= 70:
+                    errorMsg = errorMsg + "<Station not found!>\nDid you mean '" + sCheck["StationDesc"] + "'?\n"
+                    return errorBroker(errorMsg, printData)
+                    sFound = 1
+                itwo += 1
+                
+            if sFound == 0:
+                errorBroker("ERROR! A station with that name cannot be found.", printData)
+            
+        elif len(nameCheck) > 1:
+            errorMsg = "Multiple stations with that name have been found!\n"
+            i = -1
+            iterdata = iter(item for item in nameCheck)
+                
+            while i < len(nameCheck):
+                nameCheck = next((iterdata))
+                errorMsg = errorMsg + nameCheck["Destination"] + "/n"
+                i += 1
+            
+            return errorBroker(errorMsg, printData)
+
+        elif len(nameCheck) == 1:
+            # Since there is exactly one result, create array called train which holds all of the train data..
+            train = []
+
+            i = 0
+            iterdata = iter(item for item in station)
+            
+            # Iterating through all the trains found at that station and put into train.
+            while i < len(station):
+                train = next((iterdata))
+                
+                # Arriving / Departing and Early/Late/On-Time is done here to keep code modular and to shorten printing.
+                if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
+                    intype = "arriving in"
+                elif train["Locationtype"].lower() == "o":
+                    intype = "departing in"
+                    
+                if int(train["Late"]) < -1:
+                    ## Putting together the early phrase, it's an absolute as the API reports earliness
+                    ## as a minus number.
+                    time_early = str(abs(int(train["Late"])))
+                    runningtype = "".join(("Running ", time_early, " minutes early."))
+                elif int(train["Late"]) == -1:
+                    time_early = str(abs(int(train["Late"])))
+                    runningtype = "".join(("Running ", time_early, " minute early."))
+                elif int(train["Late"]) == 0:
+                    runningtype = "Running on time."
+                elif int(train["Late"]) == 1:
+                    runningtype = "".join(("Running ", train["Late"], " minute late."))
+                elif int(train["Late"]) > 1:
+                    runningtype = "".join(("Running ", train["Late"], " minutes late."))
+                
+                if int(train["Duein"]) != 1:
+                    print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minutes.", str(runningtype))
+                else:
+                    print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
+                    
+                i += 1
+            
+            if len(station) == 0:
+                print("No trains in found in that time frame.")
+                stationSearch()
+            
+    # This only runs when an edge-case station is entered.
+    else:
+        # Since there is exactly one result, create array called train which holds all of the train data..
+        train = []
+
+        i = 0
+        iterdata = iter(item for item in station)
+        
+        # Iterating through all the trains found at that station and put into train.
+        while i < len(station):
+            train = next((iterdata))
+            
+            # Arriving / Departing and Early/Late/On-Time is done here to keep code modular and to shorten printing.
+            if train["Locationtype"].lower() == "s" or train["Locationtype"].lower() == "d":
+                intype = "arriving in"
+            elif train["Locationtype"].lower() == "o":
+                intype = "departing in"
+                
+            if int(train["Late"]) < -1:
+                # Putting together the early phrase, it's an absolute as the API reports earliness
+                # as a minus number.
+                time_early = str(abs(int(train["Late"])))
+                runningtype = "".join(("Running ", time_early, " minutes early."))
+            elif int(train["Late"]) == -1:
+                time_early = str(abs(int(train["Late"])))
+                runningtype = "".join(("Running ", time_early, " minute early."))
+            elif int(train["Late"]) == 0:
+                runningtype = "Running on time."
+            elif int(train["Late"]) == 1:
+                runningtype = "".join(("Running ", train["Late"], " minute late."))
+            elif int(train["Late"]) > 1:
+                runningtype = "".join(("Running ", train["Late"], " minutes late."))
+            
+            if int(train["Duein"]) != 1:
+                print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minutes.", str(runningtype))
+            else:
+                print("Train from", train["Origin"], "to", train["Destination"], intype, train["Duein"], "minute.", str(runningtype))
+                
+            i += 1
+        
+        if len(station) == 0:
+            print("No trains in found in that time frame.")
+            stationSearch()
    
 # Initialising, %2%     
 def init():
-    allStations = parseData("http://api.irishrail.ie/realtime/realtime.asmx/getAllStationsXML")
     print("            .-:           .:            ")
     print("          .--=+=.         .==:          ")
     print("        :----====-.       .=+++:        ")
