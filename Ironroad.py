@@ -16,7 +16,7 @@ import urllib.request
 # is used here under advice.
 # CTRL + F phrases are provided for each section.
 
-version = "v0.3 BETA"
+version = "v0.3.1 BETA"
 
 # Function Declaration, %1%
 
