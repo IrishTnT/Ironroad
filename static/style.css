@@ -1,0 +1,227 @@
+@import './colours.css';
+
+body {
+    background-color: var(--black);
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--white);
+    color-scheme: dark;
+    overflow-x: hidden;
+    background-attachment: fixed;
+    margin: auto;
+    padding: 0;
+
+    /* align items in the center of the page */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.title{
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    text-shadow: 5px 5px 5px 5px var(--grey-1);
+}
+
+.large{
+    font-size: 3rem;
+}
+
+.medium{
+    font-size: 2rem;
+}
+
+.small{
+    font-size: 1rem;
+}
+
+.nomargin{
+    margin: 0;
+    padding: 0;
+}
+
+div{
+    width: 95%;
+}
+
+.exterior{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    background-color: var(--grey-1);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.interior{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    background-color: var(--grey-2);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: inset 0 0 5px 5px var(--black);
+}
+
+/* Form Stuff */
+form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.form-element{
+    padding-top: 1rem;
+}
+
+select{
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+input{
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+textarea{
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+input[type=checkbox]{
+    width: 1rem;
+    height: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+input[type=radio]{
+    width: 1rem;
+    height: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+.switch{
+    font-size: 1rem;
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input{
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switchslider{
+    position: absolute;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--grey-4);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.switchslider:before{
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: var(--grey-2);
+    border-radius: 0.5rem;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.switchbox:checked + .switchslider{
+    background-color: var(--green);
+    border-radius: 0.5rem;
+}
+
+.switchbox:focus + .switchslider{
+    box-shadow: 0 0 1px var(--green);
+    border-radius: 0.5rem;
+}
+
+.switchbox:checked + .switchslider:before{
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+.switchslider.round{
+    border-radius: 34px;
+}
+
+.switchslider.round:before{
+    border-radius: 50%;
+}
+
+input[type=checkbox]{
+    width: 1rem;
+    height: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+input[type=range]{
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--grey-4);
+    background-color: var(--grey-2);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
