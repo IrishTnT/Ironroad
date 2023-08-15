@@ -18,6 +18,14 @@ body {
 
 }
 
+p{
+    color: var(--white);
+}
+
+.text{
+    color: var(--white);
+}
+
 .container{
     display: flex;
     flex-direction: column;
@@ -224,4 +232,56 @@ input[type=range]{
     background-color: var(--grey-2);
     color: var(--white);
     font-family: 'IBM Plex Mono', monospace;
+}
+
+button{
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 15px;
+    border: none;
+    background-color: var(--green);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.link{
+    align-self: center;
+    text-decoration: none;
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 700;
+    transition: 0.5s ease-in-out;
+}
+
+.link:hover{
+    color: var(--green);
+    text-shadow: 1px 1px 0 0 var(--black);
+    transform: scale(1.1);
+    transition: 0.5s ease-in-out;
+}
+
+/* Tables */
+table{
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid var(--grey-4);
+    background-color: var(--grey-3);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+th{
+    text-align: left;
+    padding: 0.5rem;
+    background-color: var(--grey-2);
+    border: 1px solid var(--grey-4);
+}
+
+td{
+    text-align: left;
+    padding: 0.5rem;
+    border: 1px solid var(--grey-4);
 }
